@@ -214,8 +214,19 @@ export default function CallDetailPage({
               <Card>
                 <CardLabel>Linked lead</CardLabel>
                 <div className="mt-3 space-y-3">
-                  <div className="text-display text-2xl">
-                    {formatCurrency(lead.estimated_value)}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="font-mono-alt text-text-dim">Quote</div>
+                      <div className="text-display text-2xl text-accent-cyan mt-1">
+                        {formatCurrency(lead.estimated_value)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-mono-alt text-text-dim">Closed</div>
+                      <div className="text-display text-2xl text-accent-good mt-1">
+                        {formatCurrency(lead.amount_closed)}
+                      </div>
+                    </div>
                   </div>
                   <div className="text-sm text-text-primary">
                     {JOB_VALUE_ESTIMATES[lead.job_type].label}

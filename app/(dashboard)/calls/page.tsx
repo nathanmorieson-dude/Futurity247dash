@@ -3,7 +3,7 @@ import { CallRow } from "@/components/dashboard/CallRow";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { Card, CardLabel } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { CALLS, monthToDateMetrics } from "@/lib/mock/data";
+import { CALLS, closedThisMonth, monthToDateMetrics } from "@/lib/mock/data";
 import { formatCurrency } from "@/lib/utils";
 import { Filter } from "lucide-react";
 
@@ -35,10 +35,10 @@ export default function CallsPage() {
             hint="Industry average: 38%"
           />
           <StatCard
-            label="Pipeline captured"
-            value={formatCurrency(totalValue)}
+            label="Closed revenue"
+            value={formatCurrency(closedThisMonth())}
             accent="good"
-            hint="Quoted from call list"
+            hint={`Pipeline ${formatCurrency(totalValue)}`}
           />
           <StatCard
             label="Emergencies"

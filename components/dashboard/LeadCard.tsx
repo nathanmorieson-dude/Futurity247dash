@@ -45,22 +45,31 @@ export function LeadCard({ lead }: { lead: Lead }) {
         </div>
       ) : null}
 
-      <div className="mt-3 flex items-center justify-between border-t border-white/[0.05] pt-3">
+      <div className="mt-3 grid grid-cols-2 gap-3 border-t border-white/[0.05] pt-3">
         <div>
-          <div className="text-display text-lg text-accent-cyan leading-none">
+          <div className="font-mono-alt text-text-dim">Quote</div>
+          <div className="text-display text-lg text-accent-cyan leading-none mt-1">
             {formatCurrency(lead.estimated_value)}
           </div>
-          <div className="text-[10px] text-text-dim mt-0.5">
-            {relativeTime(lead.created_at)}
+        </div>
+        <div className="text-right">
+          <div className="font-mono-alt text-text-dim">Closed</div>
+          <div
+            className={`text-display text-lg leading-none mt-1 ${
+              lead.amount_closed > 0 ? "text-accent-good" : "text-text-dim"
+            }`}
+          >
+            {formatCurrency(lead.amount_closed)}
           </div>
         </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between text-[10px] text-text-dim">
+        <span>{relativeTime(lead.created_at)}</span>
         {lead.scheduled_for ? (
-          <div className="text-right">
-            <div className="font-mono-alt text-text-dim">Scheduled</div>
-            <div className="text-xs text-text-primary tabular-nums">
-              {shortDate(lead.scheduled_for)} · {timeOfDay(lead.scheduled_for)}
-            </div>
-          </div>
+          <span className="tabular-nums text-text-muted">
+            {shortDate(lead.scheduled_for)} · {timeOfDay(lead.scheduled_for)}
+          </span>
         ) : null}
       </div>
     </div>

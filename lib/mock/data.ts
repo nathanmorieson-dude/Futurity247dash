@@ -47,6 +47,7 @@ export const LEADS: Lead[] = [
     temperature: "hot",
     status: "qualified",
     estimated_value: 850,
+    amount_closed: 200,
     address: "4129 Bouldin Ave, Austin TX",
     created_at: isoMinusMinutes(18),
   },
@@ -61,6 +62,7 @@ export const LEADS: Lead[] = [
     temperature: "hot",
     status: "booked",
     estimated_value: 3400,
+    amount_closed: 200,
     scheduled_for: isoPlusMinutes(60 * 22),
     address: "1909 E 12th St, Austin TX",
     created_at: isoMinusMinutes(95),
@@ -76,6 +78,7 @@ export const LEADS: Lead[] = [
     temperature: "warm",
     status: "booked",
     estimated_value: 1650,
+    amount_closed: 200,
     scheduled_for: isoPlusMinutes(60 * 48),
     address: "8211 Mesa Dr, Austin TX",
     created_at: isoMinusMinutes(60 * 4),
@@ -91,6 +94,7 @@ export const LEADS: Lead[] = [
     temperature: "warm",
     status: "booked",
     estimated_value: 320,
+    amount_closed: 200,
     scheduled_for: isoPlusMinutes(60 * 4),
     address: "2207 Travis Heights Blvd, Austin TX",
     created_at: isoMinusMinutes(60 * 6),
@@ -106,6 +110,7 @@ export const LEADS: Lead[] = [
     temperature: "hot",
     status: "qualified",
     estimated_value: 5200,
+    amount_closed: 200,
     address: "12 Bee Cave Rd, Austin TX",
     created_at: isoMinusMinutes(60 * 9),
   },
@@ -120,6 +125,7 @@ export const LEADS: Lead[] = [
     temperature: "cold",
     status: "new",
     estimated_value: 380,
+    amount_closed: 200,
     created_at: isoMinusMinutes(60 * 11),
   },
   {
@@ -133,6 +139,7 @@ export const LEADS: Lead[] = [
     temperature: "warm",
     status: "qualified",
     estimated_value: 1100,
+    amount_closed: 200,
     created_at: isoMinusMinutes(60 * 14),
   },
   {
@@ -146,6 +153,7 @@ export const LEADS: Lead[] = [
     temperature: "warm",
     status: "completed",
     estimated_value: 240,
+    amount_closed: 200,
     scheduled_for: isoMinusMinutes(60 * 19),
     address: "511 W 32nd St, Austin TX",
     created_at: isoMinusMinutes(60 * 20),
@@ -161,6 +169,7 @@ export const LEADS: Lead[] = [
     temperature: "hot",
     status: "qualified",
     estimated_value: 9800,
+    amount_closed: 200,
     address: "604 Hyde Park Ave, Austin TX",
     created_at: isoMinusMinutes(60 * 24),
   },
@@ -175,6 +184,7 @@ export const LEADS: Lead[] = [
     temperature: "warm",
     status: "booked",
     estimated_value: 320,
+    amount_closed: 200,
     scheduled_for: isoPlusMinutes(60 * 30),
     address: "9020 Oak Trail, Austin TX",
     created_at: isoMinusMinutes(60 * 26),
@@ -190,6 +200,7 @@ export const LEADS: Lead[] = [
     temperature: "warm",
     status: "completed",
     estimated_value: 480,
+    amount_closed: 200,
     scheduled_for: isoMinusMinutes(60 * 30),
     created_at: isoMinusMinutes(60 * 32),
   },
@@ -204,6 +215,7 @@ export const LEADS: Lead[] = [
     temperature: "cold",
     status: "lost",
     estimated_value: 280,
+    amount_closed: 200,
     created_at: isoMinusMinutes(60 * 38),
   },
 ];
@@ -653,6 +665,18 @@ export function pipelineThisMonth() {
     (a, l) => a + l.estimated_value,
     0
   );
+}
+
+export function closedThisMonth() {
+  return LEADS.reduce((a, l) => a + l.amount_closed, 0);
+}
+
+export function closedByStatus() {
+  const map: Record<string, number> = {};
+  for (const l of LEADS) {
+    map[l.status] = (map[l.status] ?? 0) + l.amount_closed;
+  }
+  return map;
 }
 
 export function activeRoi() {

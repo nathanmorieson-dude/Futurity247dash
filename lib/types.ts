@@ -59,6 +59,7 @@ export interface Lead {
   temperature: LeadTemperature;
   status: LeadStatus;
   estimated_value: number;
+  amount_closed: number;
   scheduled_for?: string;
   address?: string;
   created_at: string;

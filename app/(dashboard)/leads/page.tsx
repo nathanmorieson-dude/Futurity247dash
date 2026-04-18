@@ -3,7 +3,7 @@ import { Card, CardLabel } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { LeadCard } from "@/components/dashboard/LeadCard";
-import { LEADS } from "@/lib/mock/data";
+import { LEADS, closedThisMonth } from "@/lib/mock/data";
 import { formatCurrency } from "@/lib/utils";
 
 const COLUMNS: { id: string; label: string; statuses: string[]; tone: "cyan" | "lime" | "good" | "muted" }[] = [
@@ -22,6 +22,7 @@ export default function LeadsPage() {
   const bookedCount = LEADS.filter((l) =>
     ["booked", "completed"].includes(l.status)
   ).length;
+  const totalClosed = closedThisMonth();
 
   return (
     <>
@@ -51,10 +52,10 @@ export default function LeadsPage() {
             hint="On the calendar"
           />
           <StatCard
-            label="Avg. ticket"
-            value={formatCurrency(totalPipeline / Math.max(LEADS.length, 1))}
-            accent="lime"
-            hint="Across all leads this month"
+            label="Closed revenue"
+            value={formatCurrency(totalClosed)}
+            accent="good"
+            hint={`${LEADS.length} jobs × $200 avg close`}
           />
         </div>
 
@@ -62,16 +63,29 @@ export default function LeadsPage() {
           {COLUMNS.map((col) => {
             const items = LEADS.filter((l) => col.statuses.includes(l.status));
             const sum = items.reduce((a, l) => a + l.estimated_value, 0);
+            const closed = items.reduce((a, l) => a + l.amount_closed, 0);
             return (
               <Card key={col.id} className="p-0 overflow-hidden flex flex-col">
-                <div className="flex items-center justify-between p-4 border-b border-white/[0.04]">
-                  <div className="flex items-center gap-2">
-                    <Badge tone={col.tone} dot>
-                      {col.label}
-                    </Badge>
-                    <span className="text-text-dim text-xs">{items.length}</span>
+                <div className="flex items-start justify-between p-4 border-b border-white/[0.04]">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Badge tone={col.tone} dot>
+                        {col.label}
+                      </Badge>
+                      <span className="text-text-dim text-xs">
+                        {items.length}
+                      </span>
+                    </div>
+                    <div className="font-mono-alt text-text-dim mt-2">
+                      Pipeline · {formatCurrency(sum)}
+                    </div>
                   </div>
-                  <CardLabel>{formatCurrency(sum)}</CardLabel>
+                  <div className="text-right">
+                    <div className="font-mono-alt text-text-dim">Closed</div>
+                    <div className="text-display text-base text-accent-good leading-none mt-1">
+                      {formatCurrency(closed)}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex-1 space-y-3 p-3 max-h-[640px] overflow-y-auto">
                   {items.map((lead) => (

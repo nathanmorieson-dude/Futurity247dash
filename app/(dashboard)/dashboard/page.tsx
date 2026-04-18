@@ -15,6 +15,7 @@ import {
   DAILY_METRICS,
   activeRoi,
   callsByHour,
+  closedThisMonth,
   jobTypeBreakdown,
   leadFunnel,
   monthToDateMetrics,
@@ -27,6 +28,7 @@ import { ArrowRight } from "lucide-react";
 export default function DashboardPage() {
   const mtd = monthToDateMetrics();
   const roi = activeRoi();
+  const closed = closedThisMonth();
   const todaysCalls = CALLS.slice(0, 6);
 
   return (
@@ -41,12 +43,12 @@ export default function DashboardPage() {
           <EmergencyAlertBanner />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 animate-fade-in-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 animate-fade-in-1">
           <StatCard
             label="Calls answered · MTD"
             value={mtd.calls.toString()}
             delta={12.4}
-            hint={`${mtd.minutes} minutes used of ${CURRENT_CLIENT.included_minutes}`}
+            hint={`${mtd.minutes} min of ${CURRENT_CLIENT.included_minutes}`}
           />
           <StatCard
             label="Booked jobs"
@@ -59,15 +61,22 @@ export default function DashboardPage() {
             label="Pipeline value"
             value={formatCurrency(mtd.pipeline_value)}
             delta={21.6}
-            accent="good"
+            accent="cyan"
             hint="Quoted value of qualified leads"
+          />
+          <StatCard
+            label="Closed revenue"
+            value={formatCurrency(closed)}
+            delta={14.7}
+            accent="good"
+            hint="Confirmed jobs · $200 avg close"
           />
           <StatCard
             label="Emergencies handled"
             value={mtd.emergencies.toString()}
             delta={-2.3}
             accent="warn"
-            hint="All escalated to owner within 30s"
+            hint="All escalated within 30s"
           />
         </div>
 
