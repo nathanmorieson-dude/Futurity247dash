@@ -8,7 +8,7 @@ import type { ClientRecord } from "@/lib/supabase/types";
 const settingsSchema = z.object({
   business_hours_start: z.string().min(4),
   business_hours_end: z.string().min(4),
-  service_call_fee: z.coerce.number().min(0),
+  service_call_fee: z.number().min(0),
   emergency_contact_phone: z.string().min(10),
 });
 

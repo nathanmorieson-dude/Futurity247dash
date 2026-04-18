@@ -32,6 +32,13 @@ export default async function AdminPage() {
     supabase.from("calls").select("id", { count: "exact", head: true }),
     supabase.from("leads").select("id", { count: "exact", head: true }),
   ]);
+  const clients =
+    (clientsRes.data as Array<{
+      id: string;
+      business_name: string;
+      pricing_plan: string;
+      created_at: string;
+    }> | null) ?? [];
 
   return (
     <main className="space-y-6">
@@ -42,7 +49,7 @@ export default async function AdminPage() {
       <section className="grid gap-4 md:grid-cols-3">
         <article className="glass-card rounded-xl p-4">
           <p className="font-mono-alt text-xs text-[var(--text-muted)]">Clients</p>
-          <p className="mt-2 text-3xl font-display">{clientsRes.data?.length ?? 0}</p>
+          <p className="mt-2 text-3xl font-display">{clients.length}</p>
         </article>
         <article className="glass-card rounded-xl p-4">
           <p className="font-mono-alt text-xs text-[var(--text-muted)]">Calls logged</p>
@@ -66,7 +73,7 @@ export default async function AdminPage() {
               </tr>
             </thead>
             <tbody>
-              {(clientsRes.data ?? []).map((client) => (
+              {clients.map((client) => (
                 <tr key={client.id} className="border-t border-[var(--border)]">
                   <td className="py-3">{client.business_name}</td>
                   <td className="py-3 capitalize">{client.pricing_plan}</td>

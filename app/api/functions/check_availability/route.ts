@@ -10,14 +10,16 @@ export async function POST(request: Request) {
     const input = checkAvailabilitySchema.parse(await request.json());
     const supabase = createAdminSupabaseClient();
 
-    const { data: client, error: clientError } = await supabase
+    const clientRes = await supabase
       .from("clients")
       .select("google_calendar_id")
       .eq("id", input.client_id)
       .single();
 
-    if (clientError || !client?.google_calendar_id) {
-      console.error("Missing Google Calendar config", clientError);
+    const client = (clientRes.data as { google_calendar_id: string | null } | null);
+
+    if (clientRes.error || !client || !client.google_calendar_id) {
+      console.error("Missing Google Calendar config", clientRes.error);
       return NextResponse.json({ error: "Calendar is not configured." }, { status: 400 });
     }
 

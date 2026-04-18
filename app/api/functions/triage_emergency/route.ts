@@ -10,14 +10,16 @@ export async function POST(request: Request) {
     const input = triageEmergencySchema.parse(await request.json());
     const supabase = createAdminSupabaseClient();
 
-    const { data: client, error: clientError } = await supabase
+    const clientRes = await supabase
       .from("clients")
       .select("business_name, owner_phone")
       .eq("id", input.client_id)
       .single();
 
-    if (clientError || !client) {
-      console.error("triage_emergency missing client", clientError);
+    const client = (clientRes.data as { business_name: string; owner_phone: string | null } | null);
+
+    if (clientRes.error || !client) {
+      console.error("triage_emergency missing client", clientRes.error);
       return NextResponse.json({ error: "Client not found." }, { status: 404 });
     }
 

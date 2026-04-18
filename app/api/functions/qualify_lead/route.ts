@@ -11,13 +11,15 @@ export async function POST(request: Request) {
     const input = qualifyLeadSchema.parse(await request.json());
     const supabase = createAdminSupabaseClient();
 
-    const { data: client, error: clientError } = await supabase
+    const clientRes = await supabase
       .from("clients")
       .select("owner_phone")
       .eq("id", input.client_id)
       .single();
 
-    if (clientError || !client) {
+    const client = (clientRes.data as { owner_phone: string | null } | null);
+
+    if (clientRes.error || !client) {
       return NextResponse.json({ error: "Client not found." }, { status: 404 });
     }
 

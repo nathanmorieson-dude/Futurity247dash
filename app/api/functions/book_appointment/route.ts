@@ -12,14 +12,21 @@ export async function POST(request: Request) {
     const input = bookAppointmentSchema.parse(await request.json());
     const supabase = createAdminSupabaseClient();
 
-    const { data: client, error: clientError } = await supabase
+    const clientRes = await supabase
       .from("clients")
       .select("id, business_name, owner_phone, google_calendar_id")
       .eq("id", input.client_id)
       .single();
 
-    if (clientError || !client?.google_calendar_id) {
-      console.error("book_appointment missing client config", clientError);
+    const client = (clientRes.data as {
+      id: string;
+      business_name: string;
+      owner_phone: string | null;
+      google_calendar_id: string | null;
+    } | null);
+
+    if (clientRes.error || !client || !client.google_calendar_id) {
+      console.error("book_appointment missing client config", clientRes.error);
       return NextResponse.json({ error: "Client calendar is not configured." }, { status: 400 });
     }
 

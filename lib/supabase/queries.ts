@@ -20,11 +20,13 @@ export async function getAuthenticatedClientContext(): Promise<{
     return { session: null, client: null };
   }
 
-  const { data: client } = await supabase
+  const { data } = await supabase
     .from("clients")
     .select("*")
     .eq("owner_user_id", session.user.id)
     .maybeSingle();
+
+  const client = (data as ClientRecord | null) ?? null;
 
   return { session, client };
 }
@@ -58,18 +60,23 @@ export async function getDashboardOverview(clientId: string) {
     supabase.from("clients").select("pricing_plan").eq("id", clientId).maybeSingle(),
   ]);
 
-  const leads = leadsRes.data ?? [];
+  const leads = (leadsRes.data as Array<{
+    booking_status: string;
+    lead_tier: string | null;
+    estimated_value: number | null;
+  }> | null) ?? [];
   const bookedJobs = leads.filter((lead) => lead.booking_status === "booked").length;
   const hotLeads = leads.filter((lead) => lead.lead_tier === "hot").length;
-  const pipelineValue =
-    roiRes.data?.pipeline_value ??
-    leads.reduce((sum, lead) => sum + (lead.estimated_value ?? 0), 0);
+  const latestRoi = (roiRes.data as { monthly_fee: number; pipeline_value: number; roi_ratio: number } | null) ?? null;
 
-  const plan = clientRes.data?.pricing_plan ?? "starter";
+  const pipelineValue = latestRoi?.pipeline_value ?? leads.reduce((sum, lead) => sum + (lead.estimated_value ?? 0), 0);
+
+  const plan =
+    ((clientRes.data as { pricing_plan: keyof typeof pricingPlans } | null)?.pricing_plan ?? "starter") as keyof typeof pricingPlans;
   const fallbackMonthlyFee = pricingPlans[plan].monthlyCents / 100;
 
-  const monthlyFee = roiRes.data?.monthly_fee ?? fallbackMonthlyFee;
-  const roiRatio = roiRes.data?.roi_ratio ?? (monthlyFee ? pipelineValue / monthlyFee : 0);
+  const monthlyFee = latestRoi?.monthly_fee ?? fallbackMonthlyFee;
+  const roiRatio = latestRoi?.roi_ratio ?? (monthlyFee ? pipelineValue / monthlyFee : 0);
 
   return {
     callsThisMonth: callsRes.count ?? 0,
@@ -92,7 +99,9 @@ export async function getMonthlyUsageSeries(clientId: string) {
     .gte("usage_month", sixMonthsAgo.toISOString().slice(0, 10))
     .order("usage_month", { ascending: true });
 
-  return (data ?? []).map((row) => ({
+  const usageRows = (data as Array<{ usage_month: string; total_minutes: number }> | null) ?? [];
+
+  return usageRows.map((row) => ({
     month: new Date(row.usage_month).toLocaleString("en-US", { month: "short" }),
     minutes: row.total_minutes,
   }));
@@ -107,7 +116,7 @@ export async function getRecentCalls(clientId: string, limit: number): Promise<C
     .order("started_at", { ascending: false })
     .limit(limit);
 
-  return data ?? [];
+  return (data as CallRecord[] | null) ?? [];
 }
 
 export async function getCallById(clientId: string, callId: string): Promise<CallRecord | null> {
@@ -119,7 +128,7 @@ export async function getCallById(clientId: string, callId: string): Promise<Cal
     .eq("id", callId)
     .maybeSingle();
 
-  return data;
+  return (data as CallRecord | null) ?? null;
 }
 
 export async function getLeadPipeline(clientId: string, limit: number): Promise<LeadRecord[]> {
@@ -131,5 +140,5 @@ export async function getLeadPipeline(clientId: string, limit: number): Promise<
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  return data ?? [];
+  return (data as LeadRecord[] | null) ?? [];
 }
