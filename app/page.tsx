@@ -291,7 +291,7 @@ function Pricing() {
             billed monthly — never a surprise.
           </p>
         </div>
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
           {Object.values(PLANS).map((p) => {
             const featured = p.id === "pro";
             return (

@@ -1,4 +1,4 @@
-export type PricingPlan = "starter" | "pro" | "premium";
+export type PricingPlan = "pro" | "premium";
 
 export type Urgency = "emergency" | "urgent" | "standard" | "informational";
 
