@@ -1,6 +1,6 @@
-Futurity247 — Project Context for Claude
+# Futurity247 — Project Context for Claude
 
-> This file is read by Claude (via Cursor, Claude Code, or any AI coding tool) at the start of every session. It contains the ground truth about what we're building, how, and why. Keep it up to date.
+> This file is read by Claude (via Cursor, Claude Code, or any AI coding tool) at the start of every session. It contains the ground truth about what we’re building, how, and why. Keep it up to date.
 
 -----
 
@@ -12,7 +12,7 @@ Futurity247 — Project Context for Claude
 
 **The moat:** Vertical specialization. Every integration, prompt, emergency keyword, job-duration estimate, and lead-scoring rule is tuned for electricians — not generic receptionist software. A customer cannot replace us with Pulsy or a Retell reseller without losing this specificity.
 
-**The 3-year goal:** Reach $100K+ MRR in the electrician vertical, then sell the business or use the cash to launch sister brands for plumbers / HVAC / locksmiths. Valuation improves dramatically if we own the stack (Retell infrastructure + proprietary integrations + client data) rather than reselling someone else's platform.
+**The 3-year goal:** Reach $100K+ MRR in the electrician vertical, then sell the business or use the cash to launch sister brands for plumbers / HVAC / locksmiths. Valuation improves dramatically if we own the stack (Retell infrastructure + proprietary integrations + client data) rather than reselling someone else’s platform.
 
 -----
 
@@ -76,7 +76,7 @@ Futurity247 — Project Context for Claude
 
 ### Aesthetic
 
-Dark techno-industrial. Deep navy (#0a0e14) background. Electric cyan (#22d3ee) and lime (#a3e635) accents. Glassmorphism cards. The vibe is "premium AI product," not "corporate SaaS." Think Linear x Vercel x Stripe.
+Dark techno-industrial. Deep navy (#0a0e14) background. Electric cyan (#22d3ee) and lime (#a3e635) accents. Glassmorphism cards. The vibe is “premium AI product,” not “corporate SaaS.” Think Linear × Vercel × Stripe.
 
 ### Color tokens
 
@@ -94,7 +94,7 @@ accent-good:  #34d399   (emerald-400, for success states)
 
 ### Typography rules
 
-- **Display** (big numbers, hero headings): `font-display` -> Instrument Serif, light weight, tight tracking
+- **Display** (big numbers, hero headings): `font-display` → Instrument Serif, light weight, tight tracking
 - **Body & UI**: Geist, 400-600 weight
 - **Small caps / labels**: Geist with `letter-spacing: 0.05em` and uppercase — we call this `font-mono-alt`. Do NOT use a monospace font.
 
@@ -107,7 +107,7 @@ accent-good:  #34d399   (emerald-400, for success states)
 
 ### Do NOT
 
-- Use purple/violet gradients (AI cliche)
+- Use purple/violet gradients (AI cliché)
 - Use Inter, Roboto, or any generic sans-serif
 - Add decorative emojis or icons where text would do
 - Use more than 2 fonts total
@@ -125,7 +125,7 @@ See `/db/schema.sql` for the full schema. Key tables:
 - **`monthly_usage`** (view) — rollup for billing calculations.
 - **`client_roi`** (view) — **the single most important query in the product.** Computes pipeline value generated per client per month divided by their monthly fee. This is what we show them to prevent churn.
 
-All tables use RLS (Row Level Security) keyed to `client_id`. A client's dashboard can only ever read their own data. Service role bypasses RLS for webhook operations.
+All tables use RLS (Row Level Security) keyed to `client_id`. A client’s dashboard can only ever read their own data. Service role bypasses RLS for webhook operations.
 
 -----
 
@@ -135,9 +135,9 @@ The Retell agent is named **Billie**. Female voice, tuned for warmth + efficienc
 
 ### Hard rules Billie follows (enforced in the prompt):
 
-1. **Never quotes prices.** Always says "the electrician will give you a quote on-site." Our service call fee is the only number she'll name.
-1. **Never diagnoses.** If asked "what's wrong with my wiring," she says "I don't want to guess — that's what the electrician is for."
-1. **Emergency keywords trigger immediate escalation.** The list is in `/lib/emergency-classifier.ts`. Any match -> call `triage_emergency` function -> text owner -> do not try to book.
+1. **Never quotes prices.** Always says “the electrician will give you a quote on-site.” Our service call fee is the only number she’ll name.
+1. **Never diagnoses.** If asked “what’s wrong with my wiring,” she says “I don’t want to guess — that’s what the electrician is for.”
+1. **Emergency keywords trigger immediate escalation.** The list is in `/lib/emergency-classifier.ts`. Any match → call `triage_emergency` function → text owner → do not try to book.
 1. **Confirms phone numbers by reading them back.** Hallucinated digits = missed customer.
 1. **Short responses.** One or two sentences per turn. No monologues.
 
@@ -186,7 +186,7 @@ Our cost per minute: ~$0.08-0.12 (Retell + Twilio + LLM tokens). Never expose th
   /retell                Agent config + function handlers
   /twilio                SMS helpers
   /calendar              Google Calendar helpers
-  /emergency-classifier.ts  Keyword -> urgency mapping
+  /emergency-classifier.ts  Keyword → urgency mapping
   /pricing.ts            Plan definitions, job value estimates
 /db
   /schema.sql            Full Postgres schema
@@ -216,7 +216,7 @@ Our cost per minute: ~$0.08-0.12 (Retell + Twilio + LLM tokens). Never expose th
 ### React
 
 - Server Components by default. Add `"use client"` only when necessary (interactivity, hooks, browser APIs).
-- Data fetching in Server Components with direct Supabase calls. Don't build an unnecessary API layer.
+- Data fetching in Server Components with direct Supabase calls. Don’t build an unnecessary API layer.
 - Forms: React Hook Form + Zod.
 
 ### API routes
@@ -228,7 +228,7 @@ Our cost per minute: ~$0.08-0.12 (Retell + Twilio + LLM tokens). Never expose th
 
 ### General
 
-- No comments explaining WHAT the code does. Comments explain WHY when the reasoning isn't obvious.
+- No comments explaining WHAT the code does. Comments explain WHY when the reasoning isn’t obvious.
 - Prefer composition over abstraction. Duplication is cheaper than the wrong abstraction.
 - If a function is longer than 50 lines, consider splitting it.
 
@@ -251,11 +251,11 @@ Our cost per minute: ~$0.08-0.12 (Retell + Twilio + LLM tokens). Never expose th
 
 ## 11. Things to never do
 
-- **Never store credit card numbers, SSNs, or any PII beyond what's needed for the service.** Stripe handles cards. We store names, phone numbers, addresses, call transcripts. That's it.
+- **Never store credit card numbers, SSNs, or any PII beyond what’s needed for the service.** Stripe handles cards. We store names, phone numbers, addresses, call transcripts. That’s it.
 - **Never let the voice agent quote prices, diagnose problems, or promise specific technicians by name.** This is a liability issue for the electrician.
-- **Never mark a call "booked" without a corresponding Google Calendar event existing.** The calendar is the source of truth.
-- **Never let one client see another client's data.** RLS is non-negotiable. Every query must filter by `client_id` at the database level, not just in application code.
-- **Never build on top of Pulsy, Trillet, or other all-in-one voice platforms.** We own our stack. That's the whole point of the business.
+- **Never mark a call “booked” without a corresponding Google Calendar event existing.** The calendar is the source of truth.
+- **Never let one client see another client’s data.** RLS is non-negotiable. Every query must filter by `client_id` at the database level, not just in application code.
+- **Never build on top of Pulsy, Trillet, or other all-in-one voice platforms.** We own our stack. That’s the whole point of the business.
 - **Never silently retry failed SMS/calendar operations without logging.** Billing disputes come from missing confirmations.
 - **Never use a font outside Instrument Serif + Geist.** Consistency is the brand.
 
