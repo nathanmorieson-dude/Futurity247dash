@@ -1,0 +1,43 @@
+{
+  "name": "Billie",
+  "voice": {
+    "provider": "retell",
+    "voice_id": "female_warm_fast"
+  },
+  "model": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-5"
+  },
+  "response_guidelines": [
+    "Keep responses to one or two sentences.",
+    "Never quote pricing beyond service call fee.",
+    "Never diagnose electrical issues.",
+    "Confirm phone numbers by reading digits back.",
+    "Escalate immediately when emergency keyword is detected."
+  ],
+  "functions": [
+    {
+      "name": "check_availability",
+      "description": "Return open booking windows from Google Calendar.",
+      "url": "/api/functions/check_availability"
+    },
+    {
+      "name": "book_appointment",
+      "description": "Create calendar event, insert lead, and send SMS confirmation.",
+      "url": "/api/functions/book_appointment"
+    },
+    {
+      "name": "triage_emergency",
+      "description": "Escalate emergency calls to owner and return safety instructions.",
+      "url": "/api/functions/triage_emergency"
+    },
+    {
+      "name": "qualify_lead",
+      "description": "Score lead quality and flag hot opportunities.",
+      "url": "/api/functions/qualify_lead"
+    }
+  ],
+  "post_call_webhook": {
+    "url": "/api/webhooks/call_ended"
+  }
+}

@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --bg-base: #0a0e14;
+  --bg-card: rgba(18, 24, 33, 0.6);
+  --border: rgba(255, 255, 255, 0.06);
+  --text-primary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --accent-cyan: #22d3ee;
+  --accent-lime: #a3e635;
+  --accent-warn: #fb923c;
+  --accent-good: #34d399;
+}
+
+@theme inline {
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-geist);
+  --font-display: var(--font-instrument-serif);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+a,
+button {
+  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+}
+
+.font-mono-alt {
+  font-family: var(--font-geist), sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.fade-in-1,
+.fade-in-2,
+.fade-in-3,
+.fade-in-4 {
+  animation-name: fadeIn;
+  animation-duration: 300ms;
+  animation-timing-function: ease;
+  animation-fill-mode: both;
+}
+
+.fade-in-1 {
+  animation-delay: 0ms;
+}
+
+.fade-in-2 {
+  animation-delay: 75ms;
+}
+
+.fade-in-3 {
+  animation-delay: 150ms;
+}
+
+.fade-in-4 {
+  animation-delay: 225ms;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
