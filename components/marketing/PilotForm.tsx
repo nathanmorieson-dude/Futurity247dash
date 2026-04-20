@@ -83,7 +83,7 @@ export function PilotForm({ initialPlan = "pro" }: { initialPlan?: Plan }) {
           You&apos;re on the list, {firstName || "there"}.
         </div>
         <p className="text-sm text-text-muted max-w-sm mx-auto leading-relaxed">
-          Marcus will ring you on{" "}
+          Nathan will ring you on{" "}
           <span className="text-text-primary">{phone || "the number you gave us"}</span>{" "}
           within one business day. Usually faster. In the meantime, keep an eye
           on <span className="text-text-primary">{email}</span> for setup
@@ -282,7 +282,7 @@ export function PilotForm({ initialPlan = "pro" }: { initialPlan?: Plan }) {
       </button>
 
       <div className="text-[11px] text-text-dim text-center leading-relaxed">
-        By submitting you agree Marcus can ring or SMS you about Futurity247. No
+        By submitting you agree Nathan can ring or SMS you about Futurity247. No
         marketing spam. AU privacy principles apply. You can cancel the pilot
         any time — no credit card is taken during the trial.
       </div>

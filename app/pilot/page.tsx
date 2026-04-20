@@ -58,7 +58,7 @@ export default function PilotPage({
                 who&apos;ll answer your shop.
               </h1>
               <p className="text-text-muted text-sm sm:text-base leading-relaxed">
-                Fill in the form and Marcus will ring you back within one
+                Fill in the form and Nathan will ring you back within one
                 business day to walk through setup. Most shops are live and
                 taking real calls inside 24 hours.
               </p>

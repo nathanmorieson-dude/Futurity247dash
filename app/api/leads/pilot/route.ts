@@ -54,6 +54,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    message: "Pilot signup received. Marcus will ring you back within one business day.",
+    message: "Pilot signup received. Nathan will ring you back within one business day.",
   });
 }
