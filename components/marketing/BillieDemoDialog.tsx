@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { PhoneOff, X, Mic, AlertTriangle, Loader2 } from "lucide-react";
 import { RetellWebClient } from "retell-client-js-sdk";
 import { Button } from "@/components/ui/Button";
@@ -193,24 +194,44 @@ export function BillieDemoDialog({
     setStage("ended");
   }, [stopCall]);
 
-  if (!open) return null;
+  // Lock body scroll while the modal is open so the page behind can't drift
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  // We only render on the client and only after mount so the portal target exists
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!open || !mounted) return null;
 
   const canStart = callerName.trim().length > 0 && businessName.trim().length > 0;
 
-  return (
+  const dialogNode = (
     <div
-      className="fixed inset-0 z-[100] grid place-items-center p-4 animate-fade-in-1"
+      className="fixed inset-0 grid place-items-center p-4 animate-fade-in-1"
+      style={{ zIndex: 2147483647 }}
       role="dialog"
       aria-modal="true"
       aria-label="Talk to Billie demo"
     >
       <button
-        className="absolute inset-0 bg-[#05080c]/92 backdrop-blur-md"
+        className="absolute inset-0 bg-[#03060a]/95 backdrop-blur-xl"
         aria-label="Close demo"
         onClick={onClose}
       />
-      <div className="relative z-[1] w-full max-w-lg rounded-2xl border border-white/[0.12] bg-[#0f141c] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(34,211,238,0.15)] overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+      <div
+        className="relative w-full max-w-lg rounded-2xl border border-white/15 bg-[#0b1118] shadow-[0_50px_140px_-20px_rgba(0,0,0,0.9),0_0_0_1px_rgba(34,211,238,0.25),0_0_60px_-10px_rgba(34,211,238,0.35)] overflow-hidden"
+        style={{ zIndex: 1 }}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10 bg-[#0e141c]">
           <div className="flex items-center gap-3">
             <div className="relative">
               <div
@@ -289,6 +310,8 @@ export function BillieDemoDialog({
       </div>
     </div>
   );
+
+  return createPortal(dialogNode, document.body);
 }
 
 function formatDuration(s: number) {
