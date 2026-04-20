@@ -34,11 +34,10 @@ function Nav() {
   return (
     <header className="sticky top-0 z-30 border-b border-white/[0.05] bg-[#0a0e14]/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-md bg-accent-cyan/15 ring-1 ring-accent-cyan/40">
-            <Sparkles className="h-4 w-4 text-accent-cyan" />
-          </div>
-          <div className="text-display text-lg">Futurity247</div>
+        <Link href="/" className="flex items-center">
+          <span className="text-display text-xl leading-none">
+            Futurity<span className="text-accent-cyan italic">247</span>
+          </span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm text-text-muted">
           <a href="#features" className="hover:text-text-primary transition-colors">
@@ -360,11 +359,8 @@ function Footer() {
     >
       <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="grid h-7 w-7 place-items-center rounded-md bg-accent-cyan/15 ring-1 ring-accent-cyan/40">
-              <Sparkles className="h-3.5 w-3.5 text-accent-cyan" />
-            </div>
-            <div className="text-display text-lg">Futurity247</div>
+          <div className="text-display text-lg">
+            Futurity<span className="text-accent-cyan italic">247</span>
           </div>
           <p className="text-xs text-text-dim mt-2 max-w-md">
             Vertical AI receptionist for electricians. Built on Retell, Twilio,
