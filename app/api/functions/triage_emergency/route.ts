@@ -14,20 +14,20 @@ export const dynamic = "force-dynamic";
 
 const SAFETY_INSTRUCTIONS: Record<string, string[]> = {
   fire: [
-    "If you see flames or heavy smoke, get everyone out and call 911 right now.",
+    "If you see flames or heavy smoke, get everyone out and call Triple Zero — 000 — right now.",
     "Do not try to fight an electrical fire with water.",
   ],
   shock: [
     "Do not touch the person if they're still in contact with a live wire.",
-    "If it's safe, turn off the main breaker. Then call 911.",
+    "If it's safe, switch off the main isolator at the switchboard. Then call Triple Zero — 000.",
   ],
   water: [
-    "Stay away from the panel and any standing water.",
-    "If you can reach the main cutoff dry-handed with rubber-soled shoes, cut it. Otherwise wait for the electrician.",
+    "Stay away from the switchboard and any standing water.",
+    "If you can reach the main switch dry-handed with rubber-soled shoes, cut it. Otherwise wait for the electrician.",
   ],
   panel: [
-    "Leave that breaker in the off position — do not reset it.",
-    "Stay away from the panel until the electrician arrives.",
+    "Leave that safety switch in the off position — do not reset it.",
+    "Stay away from the switchboard until the electrician arrives.",
   ],
   default: [
     "Stop using the affected circuit.",
@@ -75,7 +75,13 @@ function pickInstructions(keywords: string[]): string[] {
     return SAFETY_INSTRUCTIONS.shock;
   if (k.includes("water") || k.includes("flood"))
     return SAFETY_INSTRUCTIONS.water;
-  if (k.includes("panel") || k.includes("breaker"))
+  if (
+    k.includes("panel") ||
+    k.includes("breaker") ||
+    k.includes("switchboard") ||
+    k.includes("safety switch") ||
+    k.includes("rcd")
+  )
     return SAFETY_INSTRUCTIONS.panel;
   return SAFETY_INSTRUCTIONS.default;
 }

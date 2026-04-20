@@ -15,7 +15,7 @@ import { HearBillieButton } from "@/components/marketing/HearBillieButton";
 const RULES = [
   {
     title: "Never quotes prices",
-    body: "Always says \"the electrician will give you a quote on-site.\" The only number Billie will name is the $89 service-call fee.",
+    body: "Always says \"the electrician will give you a quote on-site.\" The only number Billie will name is the $149 call-out fee.",
   },
   {
     title: "Never diagnoses",
@@ -214,7 +214,7 @@ export default function BilliePage() {
             <CardLabel>Telephony</CardLabel>
             <div className="mt-3 space-y-3 text-sm">
               <Row k="Provider" v="Twilio" />
-              <Row k="DID" v="(512) 555-0190" />
+              <Row k="DID" v="07 3111 9900" />
               <Row k="Recording" v="Stereo, retained 90d" />
               <Row k="STIR/SHAKEN" v="A-attested" />
             </div>
