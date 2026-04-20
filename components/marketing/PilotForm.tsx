@@ -111,7 +111,7 @@ export function PilotForm({ initialPlan = "pro" }: { initialPlan?: Plan }) {
     >
       <div className="flex items-center justify-between">
         <Badge tone="cyan" dot>
-          No credit card · 30 days free
+          30 days · No lock-in
         </Badge>
         <div className="text-[10px] uppercase tracking-widest2 text-text-dim">
           {selectedPlan.name} plan
@@ -284,7 +284,7 @@ export function PilotForm({ initialPlan = "pro" }: { initialPlan?: Plan }) {
       <div className="text-[11px] text-text-dim text-center leading-relaxed">
         By submitting you agree Nathan can ring or SMS you about Futurity247. No
         marketing spam. AU privacy principles apply. You can cancel the pilot
-        any time — no credit card is taken during the trial.
+        any time during the trial, no lock-in.
       </div>
     </form>
   );

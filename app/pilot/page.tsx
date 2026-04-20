@@ -16,7 +16,7 @@ const CHECKLIST = [
   "A dedicated business number customers ring (or forward your existing one)",
   "Google Calendar + SMS confirmations wired up",
   "Emergency escalation to your mobile under 30 seconds",
-  "30 days, no credit card, cancel any time",
+  "30 days, no lock-in, cancel any time",
 ];
 
 export default function PilotPage({

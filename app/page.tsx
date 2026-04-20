@@ -96,7 +96,7 @@ function Hero() {
           <HearBillieButton />
         </div>
         <div className="mt-3 text-xs text-text-dim">
-          No credit card · 30-day pilot · Average ROI{" "}
+          30-day pilot · Setup inside 24 hours · Average ROI{" "}
           <span className="text-accent-lime">11×</span> in month one · Prices in AUD, inc. GST.
         </div>
       </div>
