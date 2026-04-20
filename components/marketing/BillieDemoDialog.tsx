@@ -74,6 +74,7 @@ export function BillieDemoDialog({
   const startCall = useCallback(async () => {
     const name = callerName.trim();
     const biz = businessName.trim();
+    console.log("[BillieDemoDialog] startCall clicked", { name, biz });
     if (!name || !biz) return;
 
     setStage("connecting");
@@ -82,6 +83,7 @@ export function BillieDemoDialog({
     setElapsed(0);
 
     try {
+      console.log("[BillieDemoDialog] requesting access_token…");
       const res = await fetch("/api/retell/web-call", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -100,10 +102,13 @@ export function BillieDemoDialog({
         throw new Error(msg);
       }
 
-      const { access_token } = (await res.json()) as {
+      const { access_token, call_id } = (await res.json()) as {
         access_token: string;
         call_id?: string;
       };
+      console.log("[BillieDemoDialog] got access_token; starting WebRTC…", {
+        call_id,
+      });
 
       const client = new RetellWebClient();
       clientRef.current = client;
@@ -307,14 +312,15 @@ function FormStep({
   canStart: boolean;
   onStart: () => void;
 }) {
+  const handleKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && canStart) {
+      e.preventDefault();
+      onStart();
+    }
+  };
+
   return (
-    <form
-      className="px-5 py-5 space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (canStart) onStart();
-      }}
-    >
+    <div className="px-5 py-5 space-y-4">
       <p className="text-sm text-text-muted leading-relaxed">
         Billie will call you as if she were answering the phone at your shop.
         Tell us who you are and what your business is called — she&apos;ll use
@@ -328,6 +334,7 @@ function FormStep({
           type="text"
           value={callerName}
           onChange={(e) => setCallerName(e.target.value)}
+          onKeyDown={handleKey}
           placeholder="Marcus"
           className="w-full rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim outline-none focus:border-accent-cyan/50 focus:ring-2 focus:ring-accent-cyan/20 transition-colors"
           maxLength={120}
@@ -342,6 +349,7 @@ function FormStep({
           type="text"
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
+          onKeyDown={handleKey}
           placeholder="Keystone Electric"
           className="w-full rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim outline-none focus:border-accent-cyan/50 focus:ring-2 focus:ring-accent-cyan/20 transition-colors"
           maxLength={120}
@@ -354,16 +362,23 @@ function FormStep({
         the demo call.
       </div>
 
-      <Button
-        type="submit"
-        variant="primary"
-        size="lg"
-        className="w-full"
+      <button
+        type="button"
+        onClick={() => {
+          console.log("[BillieDemoDialog] Start button click", { canStart });
+          if (canStart) onStart();
+        }}
         disabled={!canStart}
+        className={cn(
+          "w-full inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors duration-150 h-12 px-5 text-sm border",
+          canStart
+            ? "bg-accent-cyan text-[#0a0e14] border-accent-cyan hover:bg-accent-cyan/90 cursor-pointer"
+            : "bg-white/5 text-text-dim border-white/10 cursor-not-allowed"
+        )}
       >
         Start live call with Billie
-      </Button>
-    </form>
+      </button>
+    </div>
   );
 }
 
