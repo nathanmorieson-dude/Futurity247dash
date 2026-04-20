@@ -199,17 +199,17 @@ export function BillieDemoDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 grid place-items-center p-4 animate-fade-in-1"
+      className="fixed inset-0 z-[100] grid place-items-center p-4 animate-fade-in-1"
       role="dialog"
       aria-modal="true"
       aria-label="Talk to Billie demo"
     >
       <button
-        className="absolute inset-0 bg-base/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-[#05080c]/92 backdrop-blur-md"
         aria-label="Close demo"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-lg rounded-2xl border border-white/[0.08] bg-card-solid/95 shadow-[0_30px_80px_-30px_rgba(34,211,238,0.25)] overflow-hidden">
+      <div className="relative z-[1] w-full max-w-lg rounded-2xl border border-white/[0.12] bg-[#0f141c] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.8),0_0_0_1px_rgba(34,211,238,0.15)] overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
           <div className="flex items-center gap-3">
             <div className="relative">
