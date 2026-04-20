@@ -83,4 +83,21 @@ export const retell = {
       }),
     });
   },
+
+  /**
+   * Creates a short-lived browser web call. The returned `access_token`
+   * is what the browser-side RetellWebClient uses to establish WebRTC
+   * audio with Billie. We pass `retell_llm_dynamic_variables` so the
+   * agent prompt can use {{CALLER_NAME}} / {{BUSINESS_NAME}}.
+   */
+  async createWebCall(params: {
+    agent_id: string;
+    metadata?: Record<string, unknown>;
+    retell_llm_dynamic_variables?: Record<string, string>;
+  }) {
+    return retellFetch("/v2/create-web-call", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+  },
 };

@@ -30,12 +30,26 @@ function truthy(v: string | undefined) {
   return v === "1" || v === "true";
 }
 
+/**
+ * Retell ships a single API key per workspace that starts with `key_`.
+ * Same key also validates webhook signatures by default unless a
+ * separate signing secret is configured, so we let either env var
+ * satisfy the API key slot — whichever is present wins.
+ */
+const apiKey =
+  raw.RETELL_API_KEY ||
+  (raw.RETELL_WEBHOOK_SECRET?.startsWith("key_")
+    ? raw.RETELL_WEBHOOK_SECRET
+    : "") ||
+  "";
+
 export const env = {
-  retellApiKey: raw.RETELL_API_KEY ?? "",
+  retellApiKey: apiKey,
   retellWebhookSecret: raw.RETELL_WEBHOOK_SECRET ?? "",
   retellAgentId: raw.RETELL_AGENT_ID ?? "",
-  retellLive: truthy(raw.RETELL_LIVE) && Boolean(raw.RETELL_API_KEY),
+  retellLive: truthy(raw.RETELL_LIVE) && Boolean(apiKey),
   appUrl: raw.APP_URL ?? "http://localhost:3000",
+  hasRetellWebCall: Boolean(apiKey && raw.RETELL_AGENT_ID),
 };
 
 export function requireRetellKey() {

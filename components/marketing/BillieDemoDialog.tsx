@@ -1,70 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pause, Play, RotateCcw, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { PhoneOff, X, Mic, AlertTriangle, Loader2 } from "lucide-react";
+import { RetellWebClient } from "retell-client-js-sdk";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
 
-type Speaker = "billie" | "caller";
+type TranscriptEntry = { role: "agent" | "user"; content: string };
 
-interface Turn {
-  who: Speaker;
-  text: string;
-  voice?: "feminine" | "masculine";
-}
-
-const DEMO_SCRIPT: Turn[] = [
-  {
-    who: "billie",
-    text: "Keystone Electric, this is Billie. How can I help you today?",
-    voice: "feminine",
-  },
-  {
-    who: "caller",
-    text: "Hi, half my house just lost power and the breaker keeps tripping when I reset it.",
-    voice: "masculine",
-  },
-  {
-    who: "billie",
-    text:
-      "Okay, that sounds serious. Before anything else — are you smelling burning, or do you see sparks at the panel?",
-    voice: "feminine",
-  },
-  { who: "caller", text: "No burning smell. Panel feels warm though.", voice: "masculine" },
-  {
-    who: "billie",
-    text:
-      "Got it. Please don't reset that breaker again. I'm texting Marcus right now and getting you on the schedule. What's the best callback number?",
-    voice: "feminine",
-  },
-  {
-    who: "caller",
-    text: "Five one two, five five five, seven seven two one.",
-    voice: "masculine",
-  },
-  {
-    who: "billie",
-    text: "Just to confirm — 512, 555, 7721. Is that right?",
-    voice: "feminine",
-  },
-  { who: "caller", text: "Yes, that's correct.", voice: "masculine" },
-  {
-    who: "billie",
-    text:
-      "Perfect. I have a same-day slot at 6:15 PM today. Does that work for you?",
-    voice: "feminine",
-  },
-  { who: "caller", text: "Yes please. Thank you.", voice: "masculine" },
-  {
-    who: "billie",
-    text:
-      "You're booked. You'll get a text confirmation in just a moment. Take care.",
-    voice: "feminine",
-  },
-];
-
-const SAMPLE_MP3_PATH = "/audio/billie-sample.mp3";
+type Stage = "form" | "connecting" | "connected" | "ended" | "error";
 
 export function BillieDemoDialog({
   open,
@@ -73,192 +18,50 @@ export function BillieDemoDialog({
   open: boolean;
   onClose: () => void;
 }) {
-  const [mode, setMode] = useState<"idle" | "audio" | "synth">("idle");
-  const [currentIdx, setCurrentIdx] = useState<number>(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasMp3, setHasMp3] = useState<boolean | null>(null);
-  const [synthAvailable, setSynthAvailable] = useState<boolean | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [stage, setStage] = useState<Stage>("form");
+  const [callerName, setCallerName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
+  const [agentTalking, setAgentTalking] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const idxRef = useRef(-1);
-  const stoppedRef = useRef(false);
+  const clientRef = useRef<RetellWebClient | null>(null);
+  const tickRef = useRef<number | null>(null);
 
-  const selectedVoices = useVoices();
-
-  // probe for the bundled MP3 once per open
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    setErrorMsg(null);
-    fetch(SAMPLE_MP3_PATH, {
-      method: "GET",
-      headers: { Range: "bytes=0-0" },
-      cache: "no-store",
-    })
-      .then((r) => {
-        if (cancelled) return;
-        const ok = r.ok || r.status === 206;
-        setHasMp3(ok);
-      })
-      .catch(() => !cancelled && setHasMp3(false));
-    setSynthAvailable(
-      typeof window !== "undefined" && "speechSynthesis" in window
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
-
-  const stopAll = useCallback(() => {
-    stoppedRef.current = true;
-    setIsPlaying(false);
-    setCurrentIdx(-1);
-    idxRef.current = -1;
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-    }
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
+  const reset = useCallback(() => {
+    setStage("form");
+    setError(null);
+    setTranscript([]);
+    setAgentTalking(false);
+    setMicLevel(0);
+    setElapsed(0);
   }, []);
 
-  useEffect(() => {
-    if (!open) stopAll();
-  }, [open, stopAll]);
-
-  useEffect(() => () => stopAll(), [stopAll]);
-
-  const playSynth = useCallback(() => {
-    if (!("speechSynthesis" in window)) return;
-    stoppedRef.current = false;
-    setMode("synth");
-    setIsPlaying(true);
-
-    const step = (i: number) => {
-      if (stoppedRef.current) return;
-      if (i >= DEMO_SCRIPT.length) {
-        setIsPlaying(false);
-        setCurrentIdx(-1);
-        idxRef.current = -1;
-        return;
+  const stopCall = useCallback(() => {
+    if (clientRef.current) {
+      try {
+        clientRef.current.stopCall();
+      } catch {
+        // ignore
       }
-      const turn = DEMO_SCRIPT[i];
-      setCurrentIdx(i);
-      idxRef.current = i;
-
-      const u = new SpeechSynthesisUtterance(turn.text);
-      const voice =
-        turn.voice === "feminine"
-          ? selectedVoices.feminine
-          : selectedVoices.masculine;
-      if (voice) u.voice = voice;
-      u.rate = turn.who === "billie" ? 1.05 : 1.0;
-      u.pitch = turn.who === "billie" ? 1.05 : 0.95;
-      u.volume = 1;
-      u.onend = () => {
-        if (stoppedRef.current) return;
-        setTimeout(() => step(i + 1), 320);
-      };
-      u.onerror = () => {
-        if (stoppedRef.current) return;
-        setTimeout(() => step(i + 1), 320);
-      };
-      utterRef.current = u;
-      window.speechSynthesis.speak(u);
-    };
-
-    step(0);
-  }, [selectedVoices]);
-
-  const playAudio = useCallback(() => {
-    const a = audioRef.current;
-    if (!a) return;
-    stoppedRef.current = false;
-    setMode("audio");
-    setErrorMsg(null);
-    setCurrentIdx(0);
-    idxRef.current = 0;
-    try {
-      a.currentTime = 0;
-    } catch {
-      // currentTime can throw if metadata hasn't loaded yet — ignore, play() will load it
+      clientRef.current = null;
     }
-    a.muted = false;
-    a.volume = 1;
-    const p = a.play();
-    if (p && typeof p.then === "function") {
-      p.then(() => {
-        setIsPlaying(true);
-      }).catch((err: unknown) => {
-        const name = (err as { name?: string })?.name ?? "Error";
-        const msg = (err as { message?: string })?.message ?? String(err);
-        console.warn("Audio play() rejected:", name, msg);
-        setIsPlaying(false);
-        setErrorMsg(
-          name === "NotAllowedError"
-            ? "Browser blocked autoplay. Click Play again to start."
-            : `Couldn't play the recording (${name}). Falling back to the browser voice…`
-        );
-        // Auto-fall-back to SpeechSynthesis so the user hears _something_
-        if (synthAvailable) {
-          setTimeout(() => playSynth(), 400);
-        }
-      });
-    } else {
-      setIsPlaying(true);
+    if (tickRef.current) {
+      window.clearInterval(tickRef.current);
+      tickRef.current = null;
     }
-  }, [synthAvailable, playSynth]);
-
-  const handlePlay = useCallback(() => {
-    if (hasMp3) playAudio();
-    else if (synthAvailable) playSynth();
-  }, [hasMp3, synthAvailable, playAudio, playSynth]);
-
-  const handlePause = useCallback(() => {
-    setIsPlaying(false);
-    if (mode === "audio" && audioRef.current) audioRef.current.pause();
-    if (mode === "synth" && "speechSynthesis" in window) {
-      window.speechSynthesis.pause();
-    }
-  }, [mode]);
-
-  const handleResume = useCallback(() => {
-    setIsPlaying(true);
-    if (mode === "audio" && audioRef.current) {
-      audioRef.current.play().catch(() => setIsPlaying(false));
-    } else if (mode === "synth" && "speechSynthesis" in window) {
-      window.speechSynthesis.resume();
-    }
-  }, [mode]);
-
-  const handleReplay = useCallback(() => {
-    stopAll();
-    setTimeout(handlePlay, 60);
-  }, [handlePlay, stopAll]);
-
-  // Audio element timeupdate → approximate current transcript turn by progress
-  const onAudioTimeUpdate = useCallback(() => {
-    const a = audioRef.current;
-    if (!a || !a.duration || isNaN(a.duration)) return;
-    const progress = a.currentTime / a.duration;
-    const i = Math.min(
-      DEMO_SCRIPT.length - 1,
-      Math.floor(progress * DEMO_SCRIPT.length)
-    );
-    setCurrentIdx(i);
   }, []);
 
-  const onAudioEnded = useCallback(() => {
-    setIsPlaying(false);
-    setCurrentIdx(DEMO_SCRIPT.length - 1);
-  }, []);
+  useEffect(() => {
+    if (!open) {
+      stopCall();
+      reset();
+    }
+    return () => stopCall();
+  }, [open, stopCall, reset]);
 
-  const disabled = hasMp3 === null || synthAvailable === null;
-
-  // Close on ESC
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -268,14 +71,133 @@ export function BillieDemoDialog({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  const startCall = useCallback(async () => {
+    const name = callerName.trim();
+    const biz = businessName.trim();
+    if (!name || !biz) return;
+
+    setStage("connecting");
+    setError(null);
+    setTranscript([]);
+    setElapsed(0);
+
+    try {
+      const res = await fetch("/api/retell/web-call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          caller_name: name,
+          business_name: biz,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const msg =
+          body?.message ??
+          body?.error ??
+          `Server returned ${res.status}. Check server logs.`;
+        throw new Error(msg);
+      }
+
+      const { access_token } = (await res.json()) as {
+        access_token: string;
+        call_id?: string;
+      };
+
+      const client = new RetellWebClient();
+      clientRef.current = client;
+
+      client.on("call_started", () => {
+        setStage("connected");
+        tickRef.current = window.setInterval(
+          () => setElapsed((s) => s + 1),
+          1000
+        );
+      });
+
+      client.on("call_ended", () => {
+        stopCall();
+        setStage("ended");
+      });
+
+      client.on("error", (err: unknown) => {
+        const msg =
+          (err as { message?: string })?.message ??
+          (typeof err === "string" ? err : "Call failed unexpectedly.");
+        console.warn("Retell web-client error:", err);
+        stopCall();
+        setError(msg);
+        setStage("error");
+      });
+
+      client.on("agent_start_talking", () => setAgentTalking(true));
+      client.on("agent_stop_talking", () => setAgentTalking(false));
+
+      client.on(
+        "update",
+        (update: {
+          transcript?: TranscriptEntry[];
+          [key: string]: unknown;
+        }) => {
+          if (Array.isArray(update.transcript)) {
+            setTranscript(
+              update.transcript.map((t) => ({
+                role: t.role,
+                content: t.content ?? "",
+              }))
+            );
+          }
+        }
+      );
+
+      client.on(
+        "audio",
+        (audio: Float32Array | Int16Array | Uint8Array | number[]) => {
+          // Not all SDK versions emit this shape; if they do, compute RMS
+          // across the buffer for a simple mic-level meter.
+          try {
+            let sum = 0;
+            const len = (audio as ArrayLike<number>).length ?? 0;
+            if (!len) return;
+            for (let i = 0; i < len; i++) {
+              const v = (audio as ArrayLike<number>)[i];
+              sum += v * v;
+            }
+            const rms = Math.sqrt(sum / len);
+            setMicLevel(Math.min(1, rms * 2));
+          } catch {
+            // no-op
+          }
+        }
+      );
+
+      await client.startCall({
+        accessToken: access_token,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("Start-call failed:", msg);
+      setError(msg);
+      setStage("error");
+    }
+  }, [callerName, businessName, stopCall]);
+
+  const hangUp = useCallback(() => {
+    stopCall();
+    setStage("ended");
+  }, [stopCall]);
+
   if (!open) return null;
+
+  const canStart = callerName.trim().length > 0 && businessName.trim().length > 0;
 
   return (
     <div
       className="fixed inset-0 z-50 grid place-items-center p-4 animate-fade-in-1"
       role="dialog"
       aria-modal="true"
-      aria-label="Hear Billie demo"
+      aria-label="Talk to Billie demo"
     >
       <button
         className="absolute inset-0 bg-base/70 backdrop-blur-sm"
@@ -289,19 +211,23 @@ export function BillieDemoDialog({
               <div
                 className={cn(
                   "grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-accent-cyan/30 to-accent-lime/20 ring-1 ring-accent-cyan/40",
-                  isPlaying && "animate-pulse-dot"
+                  agentTalking && "animate-pulse-dot"
                 )}
               >
                 <span className="text-display text-lg text-accent-cyan">B</span>
               </div>
-              {isPlaying ? (
+              {stage === "connected" ? (
                 <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-accent-good ring-4 ring-accent-good/20" />
               ) : null}
             </div>
             <div className="leading-tight">
-              <div className="text-display text-lg">Hear Billie</div>
+              <div className="text-display text-lg">Talk to Billie</div>
               <div className="text-[10px] uppercase tracking-widest2 text-text-dim">
-                Scripted emergency-call demo
+                {stage === "form" && "Live web-call demo"}
+                {stage === "connecting" && "Connecting…"}
+                {stage === "connected" && `In call · ${formatDuration(elapsed)}`}
+                {stage === "ended" && "Call ended"}
+                {stage === "error" && "Call failed"}
               </div>
             </div>
           </div>
@@ -314,175 +240,287 @@ export function BillieDemoDialog({
           </button>
         </div>
 
-        <div className="px-5 pt-4 space-y-2">
-          {hasMp3 === false ? (
-            <Badge tone="muted">
-              Browser voice · drop an MP3 at /audio/billie-sample.mp3 to use
-              the real recording
-            </Badge>
-          ) : hasMp3 === true ? (
-            <Badge tone="cyan" dot>
-              Playing recorded sample
-            </Badge>
-          ) : null}
-          {errorMsg ? (
-            <div className="rounded-md border border-accent-warn/30 bg-accent-warn/5 px-3 py-2 text-[11px] text-accent-warn leading-relaxed">
-              {errorMsg}
+        {stage === "form" ? (
+          <FormStep
+            callerName={callerName}
+            setCallerName={setCallerName}
+            businessName={businessName}
+            setBusinessName={setBusinessName}
+            canStart={canStart}
+            onStart={startCall}
+          />
+        ) : null}
+
+        {stage === "connecting" ? (
+          <div className="px-6 py-10 flex flex-col items-center gap-3 text-center">
+            <Loader2 className="h-6 w-6 text-accent-cyan animate-spin" />
+            <div className="text-sm text-text-primary">
+              Connecting you to Billie…
             </div>
-          ) : null}
-        </div>
+            <div className="text-xs text-text-dim">
+              Allow microphone access when your browser asks.
+            </div>
+          </div>
+        ) : null}
 
-        <audio
-          ref={audioRef}
-          src={SAMPLE_MP3_PATH}
-          onTimeUpdate={onAudioTimeUpdate}
-          onEnded={onAudioEnded}
-          onError={(e) => {
-            const el = e.currentTarget;
-            const err = el.error;
-            const code = err?.code ?? "?";
-            const msg = err?.message ?? "unknown";
-            console.warn("Audio element error:", code, msg);
-            setErrorMsg(
-              `Audio failed to load (code ${code}). Falling back to browser voice…`
-            );
-            setHasMp3(false);
-            setIsPlaying(false);
-          }}
-          preload="metadata"
-          playsInline
-          crossOrigin="anonymous"
-        />
+        {stage === "connected" ? (
+          <ConnectedStep
+            agentTalking={agentTalking}
+            micLevel={micLevel}
+            transcript={transcript}
+            callerName={callerName}
+            businessName={businessName}
+            onHangUp={hangUp}
+          />
+        ) : null}
 
-        <ol className="max-h-[320px] overflow-y-auto px-5 py-4 space-y-2">
-          {DEMO_SCRIPT.map((t, i) => {
-            const isActive = i === currentIdx && isPlaying;
-            const isPast = i < currentIdx;
-            return (
-              <li
-                key={i}
-                className={cn(
-                  "rounded-lg border px-3 py-2 text-sm leading-relaxed transition-colors",
-                  t.who === "billie"
-                    ? "border-accent-cyan/20 bg-accent-cyan/[0.04] text-text-primary"
-                    : "border-white/[0.06] bg-white/[0.02] text-text-primary",
-                  isActive && "ring-1 ring-accent-cyan/50",
-                  !isActive && !isPast && currentIdx !== -1 && "opacity-60"
-                )}
-              >
-                <div className="flex items-center justify-between mb-0.5">
-                  <span
-                    className={cn(
-                      "font-mono-alt",
-                      t.who === "billie"
-                        ? "text-accent-cyan"
-                        : "text-text-dim"
-                    )}
-                  >
-                    {t.who === "billie" ? "Billie" : "Caller"}
-                  </span>
-                  {isActive ? (
-                    <span className="flex items-center gap-0.5">
-                      <Bar />
-                      <Bar delay={120} />
-                      <Bar delay={240} />
-                    </span>
-                  ) : null}
-                </div>
-                {t.text}
-              </li>
-            );
-          })}
-        </ol>
+        {stage === "ended" ? (
+          <EndedStep onRestart={reset} onClose={onClose} />
+        ) : null}
 
-        <div className="flex items-center gap-2 border-t border-white/[0.06] px-5 py-4">
-          {!isPlaying && currentIdx === -1 ? (
-            <Button
-              variant="primary"
-              onClick={handlePlay}
-              disabled={disabled || (hasMp3 === false && !synthAvailable)}
-              className="flex-1"
-            >
-              <Play className="h-4 w-4" /> Play demo
-            </Button>
-          ) : isPlaying ? (
-            <Button variant="secondary" onClick={handlePause} className="flex-1">
-              <Pause className="h-4 w-4" /> Pause
-            </Button>
-          ) : (
-            <Button variant="primary" onClick={handleResume} className="flex-1">
-              <Play className="h-4 w-4" /> Resume
-            </Button>
-          )}
-          <Button variant="ghost" onClick={handleReplay} disabled={disabled}>
-            <RotateCcw className="h-4 w-4" /> Replay
-          </Button>
-        </div>
-
-        <div className="px-5 pb-4 text-[11px] text-text-dim leading-relaxed">
-          This is the scripted emergency-escalation flow Billie actually runs
-          when a caller mentions a warm panel, sparks, or burning smell. In
-          production she uses an ElevenLabs voice over Retell AI; this demo
-          uses your browser&apos;s speech synthesis when no recorded sample
-          is present so you can hear the pacing and script.
-        </div>
+        {stage === "error" ? (
+          <ErrorStep error={error} onRetry={reset} onClose={onClose} />
+        ) : null}
       </div>
     </div>
   );
 }
 
-function Bar({ delay = 0 }: { delay?: number }) {
+function formatDuration(s: number) {
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
+}
+
+function FormStep({
+  callerName,
+  setCallerName,
+  businessName,
+  setBusinessName,
+  canStart,
+  onStart,
+}: {
+  callerName: string;
+  setCallerName: (v: string) => void;
+  businessName: string;
+  setBusinessName: (v: string) => void;
+  canStart: boolean;
+  onStart: () => void;
+}) {
   return (
-    <span
-      className="block w-0.5 bg-accent-cyan rounded-full animate-pulse-dot"
-      style={{
-        height: 10,
-        animationDelay: `${delay}ms`,
+    <form
+      className="px-5 py-5 space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (canStart) onStart();
       }}
-    />
+    >
+      <p className="text-sm text-text-muted leading-relaxed">
+        Billie will call you as if she were answering the phone at your shop.
+        Tell us who you are and what your business is called — she&apos;ll use
+        your details during the call.
+      </p>
+
+      <label className="block">
+        <div className="font-mono-alt text-text-dim mb-1.5">Your name</div>
+        <input
+          autoFocus
+          type="text"
+          value={callerName}
+          onChange={(e) => setCallerName(e.target.value)}
+          placeholder="Marcus"
+          className="w-full rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim outline-none focus:border-accent-cyan/50 focus:ring-2 focus:ring-accent-cyan/20 transition-colors"
+          maxLength={120}
+        />
+      </label>
+
+      <label className="block">
+        <div className="font-mono-alt text-text-dim mb-1.5">
+          Business name
+        </div>
+        <input
+          type="text"
+          value={businessName}
+          onChange={(e) => setBusinessName(e.target.value)}
+          placeholder="Keystone Electric"
+          className="w-full rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim outline-none focus:border-accent-cyan/50 focus:ring-2 focus:ring-accent-cyan/20 transition-colors"
+          maxLength={120}
+        />
+      </label>
+
+      <div className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2 text-[11px] text-text-dim">
+        <Mic className="h-3.5 w-3.5 shrink-0" />
+        Uses your mic. Audio runs peer-to-peer through Retell — we never record
+        the demo call.
+      </div>
+
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        className="w-full"
+        disabled={!canStart}
+      >
+        Start live call with Billie
+      </Button>
+    </form>
   );
 }
 
-/**
- * Picks the best-sounding male + female voices the browser happens to have.
- * Chrome / Safari / Firefox all ship a handful; we bias toward English,
- * non-novelty voices.
- */
-function useVoices() {
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+function ConnectedStep({
+  agentTalking,
+  micLevel,
+  transcript,
+  callerName,
+  businessName,
+  onHangUp,
+}: {
+  agentTalking: boolean;
+  micLevel: number;
+  transcript: TranscriptEntry[];
+  callerName: string;
+  businessName: string;
+  onHangUp: () => void;
+}) {
+  const latest = transcript.length > 0 ? transcript[transcript.length - 1] : null;
+  return (
+    <div>
+      <div className="px-5 pt-4 flex items-center justify-between text-xs">
+        <Badge tone="good" dot>
+          Live
+        </Badge>
+        <div className="text-text-dim">
+          {callerName} · {businessName}
+        </div>
+      </div>
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
-    const update = () => setVoices(window.speechSynthesis.getVoices());
-    update();
-    window.speechSynthesis.onvoiceschanged = update;
-    return () => {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.onvoiceschanged = null;
-      }
-    };
-  }, []);
+      <div className="px-5 py-4 flex items-center justify-center gap-2 min-h-[72px]">
+        {[...Array(24)].map((_, i) => {
+          const bar = agentTalking
+            ? Math.abs(Math.sin((Date.now() / 120 + i * 0.6) % Math.PI))
+            : Math.max(0.05, micLevel * (0.5 + ((i * 37) % 50) / 100));
+          const height = 8 + bar * 46;
+          return (
+            <div
+              key={i}
+              className={cn(
+                "w-1 rounded-full transition-[height] duration-150",
+                agentTalking ? "bg-accent-cyan" : "bg-accent-lime/70"
+              )}
+              style={{ height }}
+            />
+          );
+        })}
+      </div>
 
-  return useMemo(() => {
-    const english = voices.filter((v) => /^en(-|_|$)/i.test(v.lang));
-    const byName = (...needles: string[]) =>
-      english.find((v) =>
-        needles.some((n) => v.name.toLowerCase().includes(n))
-      );
+      <div className="px-5 pb-3">
+        <div className="font-mono-alt text-text-dim mb-2">
+          {agentTalking ? "Billie is speaking" : "Billie is listening"}
+        </div>
+        <div className="min-h-[120px] max-h-[200px] overflow-y-auto rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 space-y-2">
+          {transcript.length === 0 ? (
+            <div className="text-xs text-text-dim italic">
+              Transcript will appear as the call progresses…
+            </div>
+          ) : (
+            transcript.slice(-6).map((t, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "text-sm leading-relaxed",
+                  t.role === "agent" ? "text-text-primary" : "text-text-muted",
+                  latest === t && "font-medium"
+                )}
+              >
+                <span
+                  className={cn(
+                    "font-mono-alt mr-2",
+                    t.role === "agent" ? "text-accent-cyan" : "text-text-dim"
+                  )}
+                >
+                  {t.role === "agent" ? "Billie" : callerName || "You"}
+                </span>
+                {t.content}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
-    const feminine =
-      byName("samantha", "jenny", "ava", "zira", "susan", "female") ??
-      english.find((v) => !/alex|daniel|fred|male|man/i.test(v.name)) ??
-      english[0] ??
-      voices[0];
+      <div className="border-t border-white/[0.06] px-5 py-4">
+        <Button
+          variant="danger"
+          size="lg"
+          className="w-full"
+          onClick={onHangUp}
+        >
+          <PhoneOff className="h-4 w-4" /> Hang up
+        </Button>
+      </div>
+    </div>
+  );
+}
 
-    const masculine =
-      byName("daniel", "alex", "david", "fred", "mark", "male") ??
-      english.find((v) => /alex|daniel|david|fred|mark|male/i.test(v.name)) ??
-      english[1] ??
-      english[0] ??
-      voices[0];
+function EndedStep({
+  onRestart,
+  onClose,
+}: {
+  onRestart: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="px-5 py-8 flex flex-col items-center gap-3 text-center">
+      <div className="text-display text-2xl">Thanks for testing.</div>
+      <p className="text-sm text-text-muted max-w-sm leading-relaxed">
+        That&apos;s the same Billie who&apos;ll answer your line 24/7. On your
+        real account she books straight into your calendar, texts you on
+        emergencies, and scores leads the moment they hang up.
+      </p>
+      <div className="mt-2 flex items-center gap-2">
+        <Button variant="secondary" onClick={onRestart}>
+          Call again
+        </Button>
+        <Button variant="primary" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+    </div>
+  );
+}
 
-    return { feminine, masculine };
-  }, [voices]);
+function ErrorStep({
+  error,
+  onRetry,
+  onClose,
+}: {
+  error: string | null;
+  onRetry: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="px-5 py-8 flex flex-col items-center gap-3 text-center">
+      <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent-warn/10 ring-1 ring-accent-warn/30">
+        <AlertTriangle className="h-6 w-6 text-accent-warn" />
+      </div>
+      <div className="text-display text-xl">We couldn&apos;t start the call.</div>
+      {error ? (
+        <div className="max-w-sm text-xs text-text-muted leading-relaxed rounded-lg border border-accent-warn/20 bg-accent-warn/5 px-3 py-2 text-left">
+          {error}
+        </div>
+      ) : null}
+      <p className="text-xs text-text-dim max-w-sm leading-relaxed">
+        If this keeps happening, make sure the site has microphone permission
+        in your browser and that the <code>RETELL_API_KEY</code> +{" "}
+        <code>RETELL_AGENT_ID</code> secrets are set.
+      </p>
+      <div className="mt-2 flex items-center gap-2">
+        <Button variant="secondary" onClick={onRetry}>
+          Try again
+        </Button>
+        <Button variant="primary" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+    </div>
+  );
 }
