@@ -364,7 +364,7 @@ function Footer() {
           <div className="text-display text-lg">
             Futurity<span className="text-accent-cyan italic">247</span>
           </div>
-          <p className="text-xs text-text-dim mt-2 max-w-md leading-relaxed">
+          <p className="text-sm text-text-muted mt-2 max-w-md leading-relaxed">
             Australia&apos;s 24/7 AI receptionist for electricians. Billie
             answers your line around the clock, books jobs straight into your
             Google Calendar, and escalates real emergencies to your mobile in
@@ -374,7 +374,7 @@ function Footer() {
             Calendar, and Anthropic&apos;s Claude. All pricing in AUD,
             inclusive of GST.
           </p>
-          <p className="text-[11px] text-text-dim mt-3">
+          <p className="text-xs text-text-muted mt-3 leading-relaxed">
             Servicing Brisbane electricians from West End to Chermside and
             everywhere in between. Available in every Australian state and
             territory.

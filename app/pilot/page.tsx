@@ -57,12 +57,12 @@ export default function PilotPage({
                 Meet the <span className="italic text-accent-cyan">Billie</span>{" "}
                 who&apos;ll answer your shop.
               </h1>
-              <p className="text-text-muted text-sm sm:text-base leading-relaxed">
+              <p className="text-text-primary text-base sm:text-lg leading-relaxed">
                 Fill in the form and Nathan will ring you back within one
                 business day to walk through setup. Most shops are live and
                 taking real calls inside 24 hours.
               </p>
-              <ul className="space-y-2 text-sm text-text-muted">
+              <ul className="space-y-2 text-sm text-text-primary">
                 {CHECKLIST.map((c) => (
                   <li key={c} className="flex items-start gap-2">
                     <CheckCircle2 className="h-4 w-4 text-accent-good shrink-0 mt-0.5" />
@@ -70,7 +70,7 @@ export default function PilotPage({
                   </li>
                 ))}
               </ul>
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 text-xs text-text-muted leading-relaxed">
+              <div className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-4 text-sm text-text-primary leading-relaxed">
                 Already have your answers? Call us on{" "}
                 <a
                   href="tel:+61405510693"
