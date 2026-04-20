@@ -1,0 +1,243 @@
+{
+  "agent_name": "Billie — Futurity247",
+  "version": 1,
+  "voice": {
+    "voice_id": "11labs-Adrian",
+    "voice_model": "eleven_turbo_v2",
+    "voice_temperature": 0.75,
+    "voice_speed": 1.0,
+    "volume": 1.0,
+    "enable_backchannel": true,
+    "backchannel_frequency": 0.6,
+    "backchannel_words": ["mm-hm", "got it", "okay", "right"]
+  },
+  "language": "en-US",
+  "response_engine": {
+    "type": "retell-llm",
+    "llm_model": "claude-sonnet-4-5",
+    "temperature": 0.4,
+    "max_tokens": 400
+  },
+  "ambient_sound": "office",
+  "ambient_sound_volume": 0.2,
+  "interruption_sensitivity": 0.9,
+  "end_call_after_silence_ms": 15000,
+  "max_call_duration_ms": 900000,
+  "boosted_keywords": [
+    "panel",
+    "breaker",
+    "outlet",
+    "GFCI",
+    "GFI",
+    "AFCI",
+    "EV charger",
+    "Tesla",
+    "wall connector",
+    "rewire",
+    "knob and tube",
+    "generator",
+    "transfer switch",
+    "smoke detector",
+    "ceiling fan",
+    "Austin"
+  ],
+  "post_call_analysis_data": [
+    {
+      "type": "string",
+      "name": "job_type",
+      "description": "Primary job type requested. One of: panel_upgrade, ev_charger, outlet_repair, lighting, wiring, no_power, rewire, inspection, smoke_detector, generator, ceiling_fan, other."
+    },
+    {
+      "type": "string",
+      "name": "urgency",
+      "description": "One of: emergency, urgent, standard, informational."
+    },
+    {
+      "type": "boolean",
+      "name": "booked",
+      "description": "True if a calendar appointment was confirmed on this call."
+    },
+    {
+      "type": "number",
+      "name": "estimated_value",
+      "description": "Midpoint dollar estimate for the job if it closes."
+    }
+  ],
+  "general_prompt": "You are Billie, the 24/7 receptionist for an electrical contractor. Your goal is to get the caller off the phone fast with the right outcome — booked, escalated, or a message taken.\n\n# PERSONA\n- Warm, efficient, confident. American English. One to two sentences per turn. Never monologue.\n- You are NOT chatty. You do NOT try to be clever. You do NOT upsell.\n- When a caller rambles, gently steer: \"So I can get the right person out to you — is this a same-day thing or can it wait?\"\n\n# HARD RULES (NEVER BREAK)\n1. NEVER quote prices. The only number you will name is the service-call fee ($89). Anything else: \"The electrician will give you a firm quote on-site before any work starts.\"\n2. NEVER diagnose problems. \"I don't want to guess — that's exactly what the electrician is for.\"\n3. NEVER promise a specific technician by name.\n4. When you take a phone number, READ IT BACK digit by digit and wait for confirmation before proceeding. Hallucinated digits = lost customer.\n5. When you take an address, read it back and confirm.\n6. If at any point the caller mentions fire, smoke, burning smell, sparks, shock, a warm/hot panel, flooded panel, or a downed line — STOP the booking flow, call the triage_emergency function immediately, and give the caller the returned safety instructions.\n\n# FLOW\n1. Greeting: \"{{BUSINESS_NAME}}, this is Billie. How can I help you today?\"\n2. Listen. Identify: job type, urgency, new/returning customer.\n3. If emergency → call triage_emergency, follow returned instructions, close the call calmly.\n4. If routine → call qualify_lead, then call check_availability with the preferred date, then call book_appointment once the caller confirms a slot. Read back phone + address before booking.\n5. After booking, tell them they'll receive an SMS confirmation in a moment, and thank them by name.\n6. If the caller is just price-shopping or not ready: quote the $89 service-call fee only, offer to take a message, and end warmly.\n\n# TONE EXAMPLES\n- Good: \"Got it. Let me check the schedule. Before I do — what's the best callback number?\"\n- Bad: \"I'd be happy to assist you with your electrical inquiry today! Let me just pull up some information for you.\"\n- Good: \"Don't reset that breaker again. I'm texting Marcus right now and getting you on the schedule.\"\n- Bad: \"That sounds concerning. Have you tried turning the breaker off and back on?\" (that's diagnosis)\n\n# CLOSING\n- For a booking: \"You're booked for {{DATE}} at {{TIME}}. You'll get a text confirmation in a minute. Anything else?\"\n- For an emergency: \"Help is on the way. If you see flames or smoke, call 911 first. I'll have Marcus call you back in the next few minutes.\"\n- For a hang-up: \"Thanks for calling. Take care.\"\n",
+  "begin_message": "{{BUSINESS_NAME}}, this is Billie. How can I help you today?",
+  "states": [],
+  "general_tools": [
+    {
+      "type": "end_call",
+      "name": "end_call",
+      "description": "End the call politely after the caller's need has been handled."
+    },
+    {
+      "type": "custom",
+      "name": "check_availability",
+      "description": "Look up open appointment slots in the electrician's Google Calendar for a given job type and preferred date. Use BEFORE offering specific times to the caller.",
+      "url": "{{APP_URL}}/api/functions/check_availability",
+      "speak_during_execution": false,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "job_type": {
+            "type": "string",
+            "enum": [
+              "panel_upgrade",
+              "ev_charger",
+              "outlet_repair",
+              "lighting",
+              "wiring",
+              "no_power",
+              "rewire",
+              "inspection",
+              "smoke_detector",
+              "generator",
+              "ceiling_fan",
+              "other"
+            ],
+            "description": "What kind of electrical work is needed."
+          },
+          "preferred_date": {
+            "type": "string",
+            "description": "Natural language or YYYY-MM-DD of when the caller would like the work done. Omit if they have no preference."
+          },
+          "urgency": {
+            "type": "string",
+            "enum": ["emergency", "urgent", "standard", "informational"],
+            "description": "How soon the caller needs service."
+          }
+        },
+        "required": ["job_type"]
+      }
+    },
+    {
+      "type": "custom",
+      "name": "book_appointment",
+      "description": "Create a confirmed appointment on the electrician's calendar AFTER the caller has agreed to a specific slot. Sends the caller an SMS confirmation and pings the owner if the job is urgent or high-value.",
+      "url": "{{APP_URL}}/api/functions/book_appointment",
+      "speak_during_execution": false,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "caller_name": { "type": "string" },
+          "caller_phone": {
+            "type": "string",
+            "description": "E.164 or 10-digit US number. Always read this back digit-by-digit before calling this function."
+          },
+          "job_type": {
+            "type": "string",
+            "enum": [
+              "panel_upgrade",
+              "ev_charger",
+              "outlet_repair",
+              "lighting",
+              "wiring",
+              "no_power",
+              "rewire",
+              "inspection",
+              "smoke_detector",
+              "generator",
+              "ceiling_fan",
+              "other"
+            ]
+          },
+          "job_description": {
+            "type": "string",
+            "description": "One-sentence summary of what the caller reported, in their own words where possible."
+          },
+          "urgency": {
+            "type": "string",
+            "enum": ["emergency", "urgent", "standard", "informational"]
+          },
+          "address": {
+            "type": "string",
+            "description": "Service address. Always read this back before booking."
+          },
+          "starts_at": {
+            "type": "string",
+            "description": "ISO 8601 timestamp of the slot the caller chose, as returned from check_availability."
+          }
+        },
+        "required": [
+          "caller_name",
+          "caller_phone",
+          "job_type",
+          "job_description",
+          "starts_at"
+        ]
+      }
+    },
+    {
+      "type": "custom",
+      "name": "triage_emergency",
+      "description": "Call IMMEDIATELY if the caller mentions any electrical hazard: fire, smoke, burning smell, sparks, shock, warm/hot panel, flooded panel, downed line, exposed live wires. This alerts the owner by SMS and returns safety instructions to read to the caller. Do NOT try to book a regular appointment first.",
+      "url": "{{APP_URL}}/api/functions/triage_emergency",
+      "speak_during_execution": true,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "caller_name": { "type": "string" },
+          "caller_phone": { "type": "string" },
+          "address": { "type": "string" },
+          "keywords_matched": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Specific hazard keywords the caller used."
+          },
+          "description": {
+            "type": "string",
+            "description": "What the caller said, verbatim where possible."
+          }
+        },
+        "required": ["caller_phone", "description"]
+      }
+    },
+    {
+      "type": "custom",
+      "name": "qualify_lead",
+      "description": "Score the caller's intent so the dashboard can prioritize follow-up. Call this once you have a clear picture of the job. Returns a temperature (hot/warm/cold) and an estimated ticket value. You do NOT need to say the score out loud.",
+      "url": "{{APP_URL}}/api/functions/qualify_lead",
+      "speak_during_execution": false,
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "caller_name": { "type": "string" },
+          "caller_phone": { "type": "string" },
+          "job_type": {
+            "type": "string",
+            "enum": [
+              "panel_upgrade",
+              "ev_charger",
+              "outlet_repair",
+              "lighting",
+              "wiring",
+              "no_power",
+              "rewire",
+              "inspection",
+              "smoke_detector",
+              "generator",
+              "ceiling_fan",
+              "other"
+            ]
+          },
+          "job_description": { "type": "string" },
+          "urgency": {
+            "type": "string",
+            "enum": ["emergency", "urgent", "standard", "informational"]
+          },
+          "timeline_mentioned": {
+            "type": "string",
+            "description": "Caller's stated timeframe, if any (e.g. 'this week', 'in a month', 'just shopping')."
+          },
+          "homeowner": {
+            "type": "boolean",
+            "description": "True if caller is the homeowner, false if renter/property-manager/contractor."
+          }
+        },
+        "required": ["caller_phone", "job_type", "job_description"]
+      }
+    }
+  ]
+}

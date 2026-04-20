@@ -10,6 +10,7 @@ import {
   Sparkles,
   Volume2,
 } from "lucide-react";
+import { env } from "@/lib/env";
 
 const RULES = [
   {
@@ -33,19 +34,28 @@ const RULES = [
 const FUNCTIONS = [
   {
     name: "check_availability",
+    path: "/api/functions/check_availability",
     body: "Queries Google Calendar for open slots given job type and preferred date.",
   },
   {
     name: "book_appointment",
+    path: "/api/functions/book_appointment",
     body: "Creates the calendar event, inserts a lead, sends SMS confirmation, alerts owner if urgent.",
   },
   {
     name: "triage_emergency",
+    path: "/api/functions/triage_emergency",
     body: "Alerts owner immediately, logs the call, returns safety instructions to the caller.",
   },
   {
     name: "qualify_lead",
+    path: "/api/functions/qualify_lead",
     body: "Scores the lead hot / warm / cold, flags hot leads to owner.",
+  },
+  {
+    name: "call_ended (webhook)",
+    path: "/api/webhooks/call_ended",
+    body: "Retell posts the full transcript + analysis here when Billie hangs up. Persists the call to our database.",
   },
 ];
 
@@ -119,8 +129,13 @@ export default function BilliePage() {
           </Card>
 
           <Card>
-            <CardLabel>Functions Billie can call</CardLabel>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex items-center justify-between mb-4">
+              <CardLabel>Functions Billie can call</CardLabel>
+              <Badge tone={env.retellLive ? "good" : "muted"} dot>
+                {env.retellLive ? "Live wiring" : "Mock mode"}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {FUNCTIONS.map((f) => (
                 <div
                   key={f.name}
@@ -130,6 +145,9 @@ export default function BilliePage() {
                     <CircleDashed className="h-3.5 w-3.5 text-accent-cyan" />
                     <code className="text-xs text-accent-cyan">{f.name}</code>
                   </div>
+                  <code className="block text-[10px] text-text-dim mt-1 font-mono-alt normal-case tracking-normal">
+                    POST {f.path}
+                  </code>
                   <div className="text-xs text-text-muted mt-1.5 leading-relaxed">
                     {f.body}
                   </div>
@@ -140,6 +158,35 @@ export default function BilliePage() {
         </div>
 
         <div className="space-y-4 animate-fade-in-2">
+          <Card>
+            <div className="flex items-center justify-between mb-3">
+              <CardLabel>Retell connection</CardLabel>
+              <Badge tone={env.retellLive ? "good" : "warn"} dot>
+                {env.retellLive ? "Live" : "Mock"}
+              </Badge>
+            </div>
+            <div className="text-xs text-text-muted leading-relaxed">
+              {env.retellLive
+                ? "All five function endpoints are hitting real Google Calendar, Supabase, and Twilio. Signature verification is enforced."
+                : "Endpoints are wired and signature-verified, but return mock data until RETELL_API_KEY and RETELL_LIVE=1 are set."}
+            </div>
+            <div className="mt-3 space-y-2 text-xs">
+              <Row
+                k="API key"
+                v={env.retellApiKey ? "Configured" : "Not set"}
+              />
+              <Row
+                k="Webhook secret"
+                v={env.retellWebhookSecret ? "Configured" : "Not set"}
+              />
+              <Row
+                k="Agent ID"
+                v={env.retellAgentId || "—"}
+              />
+              <Row k="App URL" v={env.appUrl} />
+            </div>
+          </Card>
+
           <Card>
             <CardLabel>Voice</CardLabel>
             <div className="mt-3 space-y-3 text-sm">
