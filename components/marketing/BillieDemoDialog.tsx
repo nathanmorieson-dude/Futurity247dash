@@ -358,7 +358,7 @@ function FormStep({
           value={callerName}
           onChange={(e) => setCallerName(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="e.g. Marcus"
+          placeholder="Your first name"
           className="w-full rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim outline-none focus:border-accent-cyan/50 focus:ring-2 focus:ring-accent-cyan/20 transition-colors"
           maxLength={120}
         />
@@ -373,7 +373,7 @@ function FormStep({
           value={businessName}
           onChange={(e) => setBusinessName(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="e.g. Keystone Electrical"
+          placeholder="Your business name"
           className="w-full rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2.5 text-sm text-text-primary placeholder:text-text-dim outline-none focus:border-accent-cyan/50 focus:ring-2 focus:ring-accent-cyan/20 transition-colors"
           maxLength={120}
         />
