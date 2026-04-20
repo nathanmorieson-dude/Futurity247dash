@@ -393,10 +393,10 @@ function Footer() {
           </div>
           <div>
             <a
-              href="tel:+61731119900"
+              href="tel:+61405510693"
               className="hover:text-accent-cyan transition-colors"
             >
-              07 3111 9900
+              0405 510 693
             </a>
           </div>
           <div className="pt-3 text-text-dim">

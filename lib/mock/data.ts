@@ -13,7 +13,7 @@ export const CURRENT_CLIENT: Client = {
   owner_name: "Marcus Reilly",
   plan: "pro",
   phone_number: "+61412550144",
-  twilio_number: "+61731119900",
+  twilio_number: "+61405510693",
   city: "Brisbane",
   state: "QLD",
   monthly_fee: PLANS.pro.price,

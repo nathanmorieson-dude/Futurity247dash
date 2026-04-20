@@ -121,7 +121,7 @@ const organizationJsonLd = {
     "@type": "ContactPoint",
     contactType: "sales",
     email: "hello@futurity247.com.au",
-    telephone: "+61-7-3111-9900",
+    telephone: "+61-405-510-693",
     availableLanguage: ["en-AU"],
     areaServed: "AU",
   },

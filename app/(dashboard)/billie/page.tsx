@@ -214,7 +214,7 @@ export default function BilliePage() {
             <CardLabel>Telephony</CardLabel>
             <div className="mt-3 space-y-3 text-sm">
               <Row k="Provider" v="Twilio" />
-              <Row k="DID" v="07 3111 9900" />
+              <Row k="DID" v="0405 510 693" />
               <Row k="Recording" v="Stereo, retained 90d" />
               <Row k="STIR/SHAKEN" v="A-attested" />
             </div>
