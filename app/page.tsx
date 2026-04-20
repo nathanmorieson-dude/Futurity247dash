@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle2,
-  Headphones,
   PhoneIncoming,
   ShieldAlert,
   Sparkles,
@@ -11,6 +10,7 @@ import {
 import { AmbientBackground } from "@/components/ambient-background";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { HearBillieButton } from "@/components/marketing/HearBillieButton";
 import { PLANS } from "@/lib/pricing";
 import { formatCurrency } from "@/lib/utils";
 
@@ -92,9 +92,7 @@ function Hero() {
               See the dashboard <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <Button variant="secondary" size="lg">
-            <Headphones className="h-4 w-4" /> Hear Billie
-          </Button>
+          <HearBillieButton />
         </div>
         <div className="mt-3 text-xs text-text-dim">
           No credit card · 14-day pilot · Average ROI{" "}

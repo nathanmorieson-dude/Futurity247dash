@@ -8,9 +8,9 @@ import {
   Headphones,
   MessageSquare,
   Sparkles,
-  Volume2,
 } from "lucide-react";
 import { env } from "@/lib/env";
+import { HearBillieButton } from "@/components/marketing/HearBillieButton";
 
 const RULES = [
   {
@@ -94,9 +94,12 @@ export default function BilliePage() {
                   calls. Powered by Claude Sonnet 4.5 inside Retell AI.
                 </p>
                 <div className="mt-4 flex items-center gap-3">
-                  <Button size="sm">
-                    <Volume2 className="h-3.5 w-3.5" /> Hear sample
-                  </Button>
+                  <HearBillieButton
+                    variant="primary"
+                    size="sm"
+                    icon="volume"
+                    label="Hear sample"
+                  />
                   <Button size="sm" variant="secondary">
                     <MessageSquare className="h-3.5 w-3.5" /> Test in chat
                   </Button>
