@@ -381,7 +381,7 @@ function Footer() {
           </p>
         </div>
         <div className="text-xs text-text-dim space-y-2">
-          <div className="font-mono-alt text-text-muted">Futurity247 Pty Ltd</div>
+          <div className="font-mono-alt text-text-muted">Futurity247</div>
           <div>Brisbane, Queensland 4000</div>
           <div>
             <a
