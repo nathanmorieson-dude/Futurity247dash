@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Start your 14-day pilot — Futurity247",
+  title: "Start your 30-day pilot — Futurity247",
   description:
     "Spin up your own Billie agent in under a day. Tell us about your shop and we'll book a 15-minute setup call.",
   alternates: { canonical: "https://futurity247.com.au/pilot" },
@@ -16,7 +16,7 @@ const CHECKLIST = [
   "A dedicated business number customers ring (or forward your existing one)",
   "Google Calendar + SMS confirmations wired up",
   "Emergency escalation to your mobile under 30 seconds",
-  "14 days, no credit card, cancel any time",
+  "30 days, no credit card, cancel any time",
 ];
 
 export default function PilotPage({
@@ -51,7 +51,7 @@ export default function PilotPage({
           <div className="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-5 gap-10">
             <div className="lg:col-span-2 space-y-6">
               <div className="font-mono-alt text-accent-cyan">
-                14-day pilot
+                30-day pilot
               </div>
               <h1 className="text-display text-4xl sm:text-5xl leading-[1.02]">
                 Meet the <span className="italic text-accent-cyan">Billie</span>{" "}

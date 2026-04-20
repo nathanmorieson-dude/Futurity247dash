@@ -96,7 +96,7 @@ function Hero() {
           <HearBillieButton />
         </div>
         <div className="mt-3 text-xs text-text-dim">
-          No credit card · 14-day pilot · Average ROI{" "}
+          No credit card · 30-day pilot · Average ROI{" "}
           <span className="text-accent-lime">11×</span> in month one · Prices in AUD, inc. GST.
         </div>
       </div>
@@ -336,7 +336,7 @@ function Pricing() {
                         variant={featured ? "primary" : "secondary"}
                         className="w-full"
                       >
-                        Start 14-day pilot
+                        Start 30-day pilot
                       </Button>
                     </Link>
                   </div>

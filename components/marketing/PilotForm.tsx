@@ -111,7 +111,7 @@ export function PilotForm({ initialPlan = "pro" }: { initialPlan?: Plan }) {
     >
       <div className="flex items-center justify-between">
         <Badge tone="cyan" dot>
-          No credit card · 14 days free
+          No credit card · 30 days free
         </Badge>
         <div className="text-[10px] uppercase tracking-widest2 text-text-dim">
           {selectedPlan.name} plan
@@ -277,7 +277,7 @@ export function PilotForm({ initialPlan = "pro" }: { initialPlan?: Plan }) {
             <Loader2 className="h-4 w-4 animate-spin" /> Sending…
           </>
         ) : (
-          <>Start my 14-day pilot</>
+          <>Start my 30-day pilot</>
         )}
       </button>
 
