@@ -67,8 +67,19 @@ export const retell = {
     return retellFetch(`/get-agent/${agentId}`);
   },
 
-  async updateAgent(agentId: string, patch: Partial<RetellAgentConfig>) {
+  async updateAgent(agentId: string, patch: Record<string, unknown>) {
     return retellFetch(`/update-agent/${agentId}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    });
+  },
+
+  async getRetellLlm(llmId: string) {
+    return retellFetch(`/get-retell-llm/${llmId}`);
+  },
+
+  async updateRetellLlm(llmId: string, patch: Record<string, unknown>) {
+    return retellFetch(`/update-retell-llm/${llmId}`, {
       method: "PATCH",
       body: JSON.stringify(patch),
     });
