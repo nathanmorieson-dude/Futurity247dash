@@ -331,7 +331,7 @@ function Pricing() {
                     ))}
                   </ul>
                   <div className="mt-6">
-                    <Link href="/dashboard">
+                    <Link href={`/pilot?plan=${p.id}`}>
                       <Button
                         variant={featured ? "primary" : "secondary"}
                         className="w-full"
