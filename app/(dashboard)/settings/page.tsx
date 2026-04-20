@@ -74,7 +74,7 @@ export default function SettingsPage() {
               />
               <Field label="Call-out fee" value="$149 inc. GST" hint="Only number Billie will quote" />
               <Field label="Electrical licence #" value="QLD EC 88294 (ERAC)" />
-              <Field label="ABN" value="88 294 517 046" />
+              <Field label="ABN" value="95 154 050 712" />
               <Field label="Public liability" value="$20M · QBE" />
             </div>
           </Card>

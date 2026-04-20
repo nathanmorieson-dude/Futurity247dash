@@ -400,7 +400,7 @@ function Footer() {
             </a>
           </div>
           <div className="pt-3 text-text-dim">
-            © {new Date().getFullYear()} Futurity247 · ABN 00 000 000 000
+            © {new Date().getFullYear()} Futurity247 · ABN 95 154 050 712
           </div>
         </div>
       </div>

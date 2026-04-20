@@ -96,8 +96,16 @@ const organizationJsonLd = {
   "@type": "Organization",
   "@id": `${SITE_URL}#organization`,
   name: SITE_NAME,
+  legalName: "Futurity247 Pty Ltd",
   url: SITE_URL,
   description: DESCRIPTION,
+  taxID: "95 154 050 712",
+  vatID: "95 154 050 712",
+  identifier: {
+    "@type": "PropertyValue",
+    propertyID: "ABN",
+    value: "95154050712",
+  },
   address: {
     "@type": "PostalAddress",
     addressLocality: "Brisbane",
