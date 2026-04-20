@@ -78,6 +78,7 @@ export function BillieDemoDialog({
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasMp3, setHasMp3] = useState<boolean | null>(null);
   const [synthAvailable, setSynthAvailable] = useState<boolean | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -90,10 +91,16 @@ export function BillieDemoDialog({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    fetch(SAMPLE_MP3_PATH, { method: "HEAD" })
+    setErrorMsg(null);
+    fetch(SAMPLE_MP3_PATH, {
+      method: "GET",
+      headers: { Range: "bytes=0-0" },
+      cache: "no-store",
+    })
       .then((r) => {
         if (cancelled) return;
-        setHasMp3(r.ok);
+        const ok = r.ok || r.status === 206;
+        setHasMp3(ok);
       })
       .catch(() => !cancelled && setHasMp3(false));
     setSynthAvailable(
@@ -167,17 +174,43 @@ export function BillieDemoDialog({
   }, [selectedVoices]);
 
   const playAudio = useCallback(() => {
-    if (!audioRef.current) return;
+    const a = audioRef.current;
+    if (!a) return;
     stoppedRef.current = false;
     setMode("audio");
-    setIsPlaying(true);
+    setErrorMsg(null);
     setCurrentIdx(0);
     idxRef.current = 0;
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(() => {
-      setIsPlaying(false);
-    });
-  }, []);
+    try {
+      a.currentTime = 0;
+    } catch {
+      // currentTime can throw if metadata hasn't loaded yet — ignore, play() will load it
+    }
+    a.muted = false;
+    a.volume = 1;
+    const p = a.play();
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        setIsPlaying(true);
+      }).catch((err: unknown) => {
+        const name = (err as { name?: string })?.name ?? "Error";
+        const msg = (err as { message?: string })?.message ?? String(err);
+        console.warn("Audio play() rejected:", name, msg);
+        setIsPlaying(false);
+        setErrorMsg(
+          name === "NotAllowedError"
+            ? "Browser blocked autoplay. Click Play again to start."
+            : `Couldn't play the recording (${name}). Falling back to the browser voice…`
+        );
+        // Auto-fall-back to SpeechSynthesis so the user hears _something_
+        if (synthAvailable) {
+          setTimeout(() => playSynth(), 400);
+        }
+      });
+    } else {
+      setIsPlaying(true);
+    }
+  }, [synthAvailable, playSynth]);
 
   const handlePlay = useCallback(() => {
     if (hasMp3) playAudio();
@@ -281,7 +314,7 @@ export function BillieDemoDialog({
           </button>
         </div>
 
-        <div className="px-5 pt-4">
+        <div className="px-5 pt-4 space-y-2">
           {hasMp3 === false ? (
             <Badge tone="muted">
               Browser voice · drop an MP3 at /audio/billie-sample.mp3 to use
@@ -292,6 +325,11 @@ export function BillieDemoDialog({
               Playing recorded sample
             </Badge>
           ) : null}
+          {errorMsg ? (
+            <div className="rounded-md border border-accent-warn/30 bg-accent-warn/5 px-3 py-2 text-[11px] text-accent-warn leading-relaxed">
+              {errorMsg}
+            </div>
+          ) : null}
         </div>
 
         <audio
@@ -299,7 +337,21 @@ export function BillieDemoDialog({
           src={SAMPLE_MP3_PATH}
           onTimeUpdate={onAudioTimeUpdate}
           onEnded={onAudioEnded}
-          preload="none"
+          onError={(e) => {
+            const el = e.currentTarget;
+            const err = el.error;
+            const code = err?.code ?? "?";
+            const msg = err?.message ?? "unknown";
+            console.warn("Audio element error:", code, msg);
+            setErrorMsg(
+              `Audio failed to load (code ${code}). Falling back to browser voice…`
+            );
+            setHasMp3(false);
+            setIsPlaying(false);
+          }}
+          preload="metadata"
+          playsInline
+          crossOrigin="anonymous"
         />
 
         <ol className="max-h-[320px] overflow-y-auto px-5 py-4 space-y-2">
