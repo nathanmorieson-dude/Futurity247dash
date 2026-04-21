@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   PhoneIncoming,
   Settings,
-  Sparkles,
   Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,13 +28,12 @@ export function Sidebar() {
 
   return (
     <aside className="hidden lg:flex w-60 shrink-0 flex-col border-r border-white/[0.05] bg-[#0a0e14]/80 backdrop-blur-xl">
-      <div className="flex items-center gap-2 px-5 py-5">
-        <div className="grid h-8 w-8 place-items-center rounded-md bg-accent-cyan/15 ring-1 ring-accent-cyan/40">
-          <Sparkles className="h-4 w-4 text-accent-cyan" />
-        </div>
+      <div className="px-5 py-5">
         <div className="leading-tight">
-          <div className="text-display text-lg">Futurity247</div>
-          <div className="text-[10px] uppercase tracking-widest2 text-text-dim">
+          <div className="text-display text-xl">
+            Futurity<span className="text-accent-cyan italic">247</span>
+          </div>
+          <div className="text-[10px] uppercase tracking-widest2 text-text-dim mt-0.5">
             Electrical · Pro
           </div>
         </div>

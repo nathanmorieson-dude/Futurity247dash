@@ -30,9 +30,11 @@ const KEYWORDS = [
   "sparks",
   "shock",
   "no power",
-  "panel hot",
+  "switchboard hot",
+  "safety switch tripping",
+  "RCD won't reset",
   "wires exposed",
-  "flooding",
+  "flooded switchboard",
   "pole down",
 ];
 
@@ -70,8 +72,10 @@ export default function SettingsPage() {
                 label="Service area"
                 value={`${CURRENT_CLIENT.city}, ${CURRENT_CLIENT.state}`}
               />
-              <Field label="Service-call fee" value="$89" hint="Only number Billie will quote" />
-              <Field label="License #" value="TECL 28774" />
+              <Field label="Call-out fee" value="$149 inc. GST" hint="Only number Billie will quote" />
+              <Field label="Electrical licence #" value="QLD EC 88294 (ERAC)" />
+              <Field label="ABN" value="95 154 050 712" />
+              <Field label="Public liability" value="$20M · QBE" />
             </div>
           </Card>
 

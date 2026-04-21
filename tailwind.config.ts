@@ -14,9 +14,9 @@ const config: Config = {
         "card-solid": "#121821",
         border: "rgba(255, 255, 255, 0.06)",
         "border-strong": "rgba(255, 255, 255, 0.12)",
-        "text-primary": "#e2e8f0",
-        "text-muted": "#94a3b8",
-        "text-dim": "#64748b",
+        "text-primary": "#f1f5f9",
+        "text-muted": "#cbd5e1",
+        "text-dim": "#94a3b8",
         accent: {
           cyan: "#22d3ee",
           lime: "#a3e635",

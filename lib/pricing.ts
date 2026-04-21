@@ -49,18 +49,18 @@ export const PLANS: Record<
 
 export const JOB_VALUE_ESTIMATES: Record<JobType, { low: number; high: number; label: string }> =
   {
-    panel_upgrade: { low: 1800, high: 4200, label: "Panel upgrade" },
-    ev_charger: { low: 900, high: 2400, label: "EV charger install" },
-    outlet_repair: { low: 180, high: 450, label: "Outlet repair" },
-    lighting: { low: 250, high: 1200, label: "Lighting" },
-    wiring: { low: 600, high: 3500, label: "Wiring" },
-    no_power: { low: 250, high: 1500, label: "No power / outage" },
-    rewire: { low: 4500, high: 12000, label: "Whole-home rewire" },
-    inspection: { low: 220, high: 480, label: "Safety inspection" },
-    smoke_detector: { low: 180, high: 400, label: "Smoke detector" },
-    generator: { low: 3500, high: 9500, label: "Generator install" },
-    ceiling_fan: { low: 220, high: 520, label: "Ceiling fan" },
-    other: { low: 250, high: 850, label: "Other" },
+    panel_upgrade: { low: 2600, high: 6500, label: "Switchboard upgrade" },
+    ev_charger: { low: 1400, high: 3600, label: "EV charger install" },
+    outlet_repair: { low: 280, high: 680, label: "Powerpoint repair" },
+    lighting: { low: 380, high: 1800, label: "Lighting" },
+    wiring: { low: 900, high: 5200, label: "Cabling / circuits" },
+    no_power: { low: 380, high: 2200, label: "No power / outage" },
+    rewire: { low: 7500, high: 22000, label: "Whole-home rewire" },
+    inspection: { low: 320, high: 720, label: "Safety inspection" },
+    smoke_detector: { low: 260, high: 620, label: "Smoke alarm" },
+    generator: { low: 5200, high: 14000, label: "Backup generator" },
+    ceiling_fan: { low: 320, high: 780, label: "Ceiling fan" },
+    other: { low: 380, high: 1250, label: "Other" },
   };
 
 export function planFromId(id: PricingPlan) {

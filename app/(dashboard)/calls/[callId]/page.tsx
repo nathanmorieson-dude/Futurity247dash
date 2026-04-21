@@ -87,7 +87,7 @@ export default function CallDetailPage({
                 </div>
               </div>
               <div className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-                <button className="grid h-12 w-12 place-items-center rounded-full bg-accent-cyan text-base">
+                <button className="grid h-12 w-12 place-items-center rounded-full bg-accent-cyan text-[#0a0e14] hover:bg-accent-cyan/90 transition-colors">
                   <Play className="h-5 w-5 fill-current" />
                 </button>
                 <div className="flex-1">
