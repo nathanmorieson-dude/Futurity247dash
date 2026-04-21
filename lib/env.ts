@@ -9,6 +9,8 @@ const schema = z.object({
     .optional()
     .default("0"),
   APP_URL: z.string().url().optional(),
+  ADMIN_PASSWORD: z.string().optional(),
+  ADMIN_COOKIE_SECRET: z.string().optional(),
 });
 
 const parsed = schema.safeParse({
@@ -17,6 +19,8 @@ const parsed = schema.safeParse({
   RETELL_AGENT_ID: process.env.RETELL_AGENT_ID,
   RETELL_LIVE: process.env.RETELL_LIVE,
   APP_URL: process.env.APP_URL,
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
+  ADMIN_COOKIE_SECRET: process.env.ADMIN_COOKIE_SECRET,
 });
 
 if (!parsed.success) {
@@ -50,6 +54,11 @@ export const env = {
   retellLive: truthy(raw.RETELL_LIVE) && Boolean(apiKey),
   appUrl: raw.APP_URL ?? "http://localhost:3000",
   hasRetellWebCall: Boolean(apiKey && raw.RETELL_AGENT_ID),
+  adminPassword: raw.ADMIN_PASSWORD ?? "",
+  adminCookieSecret:
+    raw.ADMIN_COOKIE_SECRET ??
+    raw.ADMIN_PASSWORD ??
+    "dev-insecure-please-set-ADMIN_COOKIE_SECRET",
 };
 
 export function requireRetellKey() {
